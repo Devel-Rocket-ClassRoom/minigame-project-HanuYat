@@ -17,6 +17,9 @@
 *.nupkg
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
+# Unity Package Manager manifest must be tracked
+!Packages/manifest.json
+!Packages/packages-lock.json
 
 # .NET build artifacts
 artifacts/
@@ -112,3 +115,6 @@ x86/
 
 # Imported
 Assets/Imported
+
+# Claude Code local-only settings
+.claude/settings.local.json
