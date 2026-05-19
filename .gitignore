@@ -123,3 +123,6 @@ Assets/Imported
 # Unity AI Toolkit generated cache
 Assets/AI Toolkit/
 Assets/AI Toolkit.meta
+
+# AI Toolkit / external generation cache (루트)
+/GeneratedAssets/
