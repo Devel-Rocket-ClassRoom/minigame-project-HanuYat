@@ -7,7 +7,7 @@ public class Interactor : MonoBehaviour
     private InputActionReference interactAction;
 
     [SerializeField]
-    private float maxDistance = 2.5f;
+    private float maxDistance = 2f;
 
     [SerializeField]
     private LayerMask interactableLayer;
