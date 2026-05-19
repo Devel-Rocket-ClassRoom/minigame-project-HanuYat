@@ -6,10 +6,13 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable
     private Light[] roomLights;
 
     [SerializeField]
+    private float lightIntensityOn = 40f;
+
+    [SerializeField]
     private Renderer[] ledRenderers;
 
     [SerializeField]
-    private Color emissionOnColor = new Color(1f, 0.92f, 0.7f) * 2f;
+    private Color emissionOnColor = new Color(1f, 0.95f, 0.8f) * 6f;
 
     [SerializeField]
     private bool startOn = true;
@@ -31,12 +34,15 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable
     private void ApplyState(bool on)
     {
         foreach (Light l in roomLights)
+        {
             l.enabled = on;
+            l.intensity = on ? lightIntensityOn : 0f;
+        }
 
-        Color targetColor = on ? emissionOnColor : Color.black;
+        Color ledColor = on ? emissionOnColor : Color.black;
         foreach (Renderer r in ledRenderers)
         {
-            r.material.SetColor(EmissionColorId, targetColor);
+            r.material.SetColor(EmissionColorId, ledColor);
             r.material.EnableKeyword("_EMISSION");
         }
 
