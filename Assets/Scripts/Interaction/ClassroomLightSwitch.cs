@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ClassroomLightSwitch : MonoBehaviour, IInteractable
+public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 {
     [SerializeField]
     private Light[] roomLights;
@@ -27,9 +27,24 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable
         ApplyState(startOn);
     }
 
+    private void OnEnable()
+    {
+        ResettableRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        ResettableRegistry.Unregister(this);
+    }
+
     public void Interact()
     {
         ApplyState(!isOn);
+    }
+
+    public void ResetToDefault()
+    {
+        ApplyState(startOn);
     }
 
     private void ApplyState(bool on)
