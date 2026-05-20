@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class SlidingDoor : MonoBehaviour, IInteractable
+public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
 {
     // 실제로 움직일 문 오브젝트. 비워두면 이 GameObject 자신이 움직임
     [SerializeField]
@@ -25,11 +25,32 @@ public class SlidingDoor : MonoBehaviour, IInteractable
         closedPos = Door.localPosition;
     }
 
+    private void OnEnable()
+    {
+        ResettableRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        ResettableRegistry.Unregister(this);
+    }
+
     public void Interact()
     {
         if (slideCoroutine != null)
             StopCoroutine(slideCoroutine);
         slideCoroutine = StartCoroutine(Slide(!isOpen));
+    }
+
+    public void ResetToDefault()
+    {
+        if (slideCoroutine != null)
+        {
+            StopCoroutine(slideCoroutine);
+            slideCoroutine = null;
+        }
+        Door.localPosition = closedPos;
+        isOpen = false;
     }
 
     private IEnumerator Slide(bool opening)
