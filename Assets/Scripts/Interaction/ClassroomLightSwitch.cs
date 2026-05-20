@@ -6,13 +6,14 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable
     private Light[] roomLights;
 
     [SerializeField]
-    private float lightIntensityOn = 40f;
+    private float lightIntensityOn = 5f;
 
     [SerializeField]
     private Renderer[] ledRenderers;
 
+    // 한국 교실 형광등: 6500K 쿨 화이트
     [SerializeField]
-    private Color emissionOnColor = new Color(1f, 0.95f, 0.8f) * 6f;
+    private Color emissionOnColor = new Color(0.92f, 0.96f, 1.0f) * 4f;
 
     [SerializeField]
     private bool startOn = true;
