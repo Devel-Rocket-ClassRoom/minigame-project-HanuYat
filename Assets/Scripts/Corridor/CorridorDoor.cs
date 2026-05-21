@@ -64,7 +64,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
 
         ResettableRegistry.ResetAll();
 
-        // AnomalyManager.Instance?.Refresh(); // Week 2 구현 예정
+        AnomalyManager.Instance?.Refresh();
     }
 
     private void OnComplete()
