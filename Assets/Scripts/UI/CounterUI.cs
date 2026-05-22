@@ -13,6 +13,8 @@ public class CounterUI : MonoBehaviour
     [SerializeField]
     private int goal = 8;
 
+    public int Goal => goal;
+
     [Header("Pulse")]
     [SerializeField]
     private float pulseDuration = 0.2f;
