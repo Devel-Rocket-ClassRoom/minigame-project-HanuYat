@@ -12,6 +12,11 @@ public class MainMenuController : MonoBehaviour
     [SerializeField]
     private GameObject settingsPanel;
 
+    [SerializeField]
+    private FadeController fadeController;
+
+    private bool isStarting;
+
     private void Awake()
     {
         Cursor.lockState = CursorLockMode.None;
@@ -20,7 +25,14 @@ public class MainMenuController : MonoBehaviour
 
     public void OnStartClicked()
     {
-        SceneManager.LoadScene(gameSceneName);
+        if (isStarting)
+            return;
+        isStarting = true;
+
+        if (fadeController != null)
+            fadeController.StartTransition(() => SceneManager.LoadScene(gameSceneName));
+        else
+            SceneManager.LoadScene(gameSceneName);
     }
 
     public void OnSettingsClicked()
