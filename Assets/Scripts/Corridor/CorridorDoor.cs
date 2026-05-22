@@ -10,6 +10,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     }
 
     public static event Action<DoorDirection> OnDoorUsed;
+    public static event Action OnCorridorEntered;
 
     [SerializeField]
     private DoorDirection direction;
@@ -78,5 +79,6 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     {
         playerController.enabled = true;
         inTransition = false;
+        OnCorridorEntered?.Invoke();
     }
 }
