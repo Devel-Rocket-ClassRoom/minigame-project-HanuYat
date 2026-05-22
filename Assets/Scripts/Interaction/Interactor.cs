@@ -12,6 +12,9 @@ public class Interactor : MonoBehaviour
     [SerializeField]
     private LayerMask interactableLayer;
 
+    private InteractableOutline currentHover;
+    private IInteractable currentInteractable;
+
     private void OnEnable()
     {
         interactAction.action.Enable();
@@ -22,21 +25,63 @@ public class Interactor : MonoBehaviour
     {
         interactAction.action.started -= OnInteractPressed;
         interactAction.action.Disable();
+        ClearHover();
     }
 
-    private void OnInteractPressed(InputAction.CallbackContext ctx)
+    private void Update()
     {
+        InteractableOutline hoverHit = null;
+        IInteractable interactHit = null;
+
+        // 벽 등 모든 콜라이더에 대해 Raycast — 가장 가까운 것에 닿게.
+        // 닿은 오브젝트가 Interactable 레이어일 때만 hover/interact 활성.
         if (
             Physics.Raycast(
                 transform.position,
                 transform.forward,
                 out RaycastHit hit,
                 maxDistance,
-                interactableLayer
+                ~0,
+                QueryTriggerInteraction.Ignore
             )
         )
         {
-            hit.collider.GetComponentInParent<IInteractable>()?.Interact();
+            int hitLayerBit = 1 << hit.collider.gameObject.layer;
+            if ((hitLayerBit & interactableLayer.value) != 0)
+            {
+                hoverHit = hit.collider.GetComponentInParent<InteractableOutline>();
+                interactHit = hit.collider.GetComponentInParent<IInteractable>();
+            }
         }
+
+        if (hoverHit != currentHover)
+        {
+            if (currentHover != null)
+            {
+                currentHover.SetHovered(false);
+            }
+            if (hoverHit != null)
+            {
+                hoverHit.SetHovered(true);
+            }
+            currentHover = hoverHit;
+        }
+
+        currentInteractable = interactHit;
+    }
+
+    private void OnInteractPressed(InputAction.CallbackContext ctx)
+    {
+        currentInteractable?.Interact();
+    }
+
+    private void ClearHover()
+    {
+        if (currentHover != null)
+        {
+            currentHover.SetHovered(false);
+        }
+        currentHover = null;
+        currentInteractable = null;
     }
 }
