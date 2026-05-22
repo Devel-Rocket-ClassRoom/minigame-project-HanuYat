@@ -40,7 +40,7 @@ public class FadeController : MonoBehaviour
         onMidpoint?.Invoke();
 
         if (midpointHold > 0f)
-            yield return new WaitForSeconds(midpointHold);
+            yield return new WaitForSecondsRealtime(midpointHold);
 
         yield return Fade(1f, 0f);
 
@@ -50,13 +50,16 @@ public class FadeController : MonoBehaviour
 
     private IEnumerator Fade(float from, float to)
     {
+        if (fadeImage == null)
+            yield break;
+
         float elapsed = 0f;
         Color c = fadeImage.color;
         while (elapsed < fadeDuration)
         {
             c.a = Mathf.Lerp(from, to, elapsed / fadeDuration);
             fadeImage.color = c;
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
         c.a = to;

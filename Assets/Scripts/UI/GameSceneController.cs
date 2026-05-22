@@ -13,6 +13,9 @@ public class GameSceneController : MonoBehaviour
     [SerializeField]
     private FadeController fadeController;
 
+    [SerializeField]
+    private PlayerController playerController;
+
     private bool isReturning;
 
     private void OnEnable()
@@ -32,6 +35,9 @@ public class GameSceneController : MonoBehaviour
         if (isReturning)
             return;
         isReturning = true;
+
+        if (playerController != null)
+            playerController.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

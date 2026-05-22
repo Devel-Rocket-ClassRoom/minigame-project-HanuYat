@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AnomalyManager : MonoBehaviour
@@ -35,22 +36,10 @@ public class AnomalyManager : MonoBehaviour
         if (candidates.Count == 0 || Random.value >= anomalyProbability)
             return;
 
-        AnomalyEffectBase picked;
-        if (candidates.Count <= 1)
-        {
-            picked = candidates[0];
-        }
-        else
-        {
-            int index;
-            int attempts = 0;
-            do
-            {
-                index = Random.Range(0, candidates.Count);
-                attempts++;
-            } while (candidates[index] == previousAnomaly && attempts < candidates.Count);
-            picked = candidates[index];
-        }
+        List<AnomalyEffectBase> pool = candidates.Where(c => c != previousAnomaly).ToList();
+        if (pool.Count == 0)
+            pool = candidates;
+        AnomalyEffectBase picked = pool[Random.Range(0, pool.Count)];
 
         currentAnomaly = picked;
         currentAnomaly.Activate();

@@ -23,7 +23,14 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     [SerializeField]
     private PlayerController playerController;
 
+    private CharacterController characterController;
     private bool inTransition;
+
+    private void Start()
+    {
+        if (playerController != null)
+            characterController = playerController.GetComponent<CharacterController>();
+    }
 
     public void Interact()
     {
@@ -47,7 +54,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
 
     private void OnMidpoint()
     {
-        CharacterController cc = playerController.GetComponent<CharacterController>();
+        CharacterController cc = characterController;
         bool ccEnabled = cc != null && cc.enabled;
         if (cc != null)
             cc.enabled = false;
