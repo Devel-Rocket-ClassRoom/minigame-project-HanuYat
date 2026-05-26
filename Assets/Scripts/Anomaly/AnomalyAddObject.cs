@@ -16,6 +16,7 @@ public class AnomalyAddObject : AnomalyEffectBase
     {
         if (target != null)
             target.SetActive(true);
+        Debug.Log("[Anomaly] A01 AnomalyAddObject activated");
     }
 
     public override void Deactivate()
