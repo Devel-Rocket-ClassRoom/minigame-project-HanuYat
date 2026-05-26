@@ -17,6 +17,7 @@ public class AnomalyRemoveObject : AnomalyEffectBase
         foreach (GameObject t in targets)
             if (t != null)
                 t.SetActive(false);
+        Debug.Log("[Anomaly] A02 AnomalyRemoveObject activated");
     }
 
     public override void Deactivate()

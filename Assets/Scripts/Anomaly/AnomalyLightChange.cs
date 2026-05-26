@@ -36,6 +36,7 @@ public class AnomalyLightChange : AnomalyEffectBase
             l.color = anomalyColor;
             l.intensity = anomalyIntensity;
         }
+        Debug.Log("[Anomaly] A04 AnomalyLightChange activated");
     }
 
     public override void Deactivate()
