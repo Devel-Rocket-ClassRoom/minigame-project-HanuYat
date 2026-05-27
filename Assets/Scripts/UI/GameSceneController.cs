@@ -20,14 +20,23 @@ public class GameSceneController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (cancelAction == null || cancelAction.action == null)
+        {
+            Debug.LogError("[GameSceneController] cancelAction 미할당 — 비활성.", this);
+            enabled = false;
+            return;
+        }
         cancelAction.action.Enable();
         cancelAction.action.performed += OnCancelPerformed;
     }
 
     private void OnDisable()
     {
-        cancelAction.action.performed -= OnCancelPerformed;
-        cancelAction.action.Disable();
+        if (cancelAction != null && cancelAction.action != null)
+        {
+            cancelAction.action.performed -= OnCancelPerformed;
+            cancelAction.action.Disable();
+        }
     }
 
     private void OnCancelPerformed(InputAction.CallbackContext _)

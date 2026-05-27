@@ -86,18 +86,40 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-        moveAction.action.Enable();
-        lookAction.action.Enable();
-        sprintAction.action.Enable();
-        crouchAction.action.Enable();
+        if (
+            !TryEnable(moveAction, nameof(moveAction))
+            || !TryEnable(lookAction, nameof(lookAction))
+            || !TryEnable(sprintAction, nameof(sprintAction))
+            || !TryEnable(crouchAction, nameof(crouchAction))
+        )
+        {
+            enabled = false;
+        }
     }
 
     private void OnDisable()
     {
-        moveAction.action.Disable();
-        lookAction.action.Disable();
-        sprintAction.action.Disable();
-        crouchAction.action.Disable();
+        TryDisable(moveAction);
+        TryDisable(lookAction);
+        TryDisable(sprintAction);
+        TryDisable(crouchAction);
+    }
+
+    private bool TryEnable(InputActionReference reference, string fieldName)
+    {
+        if (reference == null || reference.action == null)
+        {
+            Debug.LogError($"[PlayerController] {fieldName} 미할당 — 비활성.", this);
+            return false;
+        }
+        reference.action.Enable();
+        return true;
+    }
+
+    private void TryDisable(InputActionReference reference)
+    {
+        if (reference != null && reference.action != null)
+            reference.action.Disable();
     }
 
     private void Start()

@@ -14,24 +14,47 @@ public class AnomalyColorChange : AnomalyEffectBase
     private MaterialPropertyBlock mpb;
     private Color originalColor;
     private int colorPropertyId;
+    private bool ready;
 
     private void Awake()
     {
         if (targetRenderer == null)
+        {
+            Debug.LogWarning("[AnomalyColorChange] targetRenderer 미할당 — 비활성.", this);
             return;
+        }
+
+        Material srcMat = targetRenderer.sharedMaterial;
+        if (srcMat == null)
+        {
+            Debug.LogWarning(
+                "[AnomalyColorChange] targetRenderer.sharedMaterial 없음 — 비활성.",
+                this
+            );
+            return;
+        }
+
+        if (srcMat.HasProperty(BaseColorId))
+            colorPropertyId = BaseColorId;
+        else if (srcMat.HasProperty(ColorId))
+            colorPropertyId = ColorId;
+        else
+        {
+            Debug.LogWarning(
+                $"[AnomalyColorChange] '{srcMat.name}' 에 _BaseColor / _Color 둘 다 없음 — 비활성.",
+                this
+            );
+            return;
+        }
 
         mpb = new MaterialPropertyBlock();
-        Material srcMat = targetRenderer.sharedMaterial;
-
-        colorPropertyId = srcMat.HasProperty(BaseColorId) ? BaseColorId : ColorId;
-        originalColor = srcMat.HasProperty(colorPropertyId)
-            ? srcMat.GetColor(colorPropertyId)
-            : Color.white;
+        originalColor = srcMat.GetColor(colorPropertyId);
+        ready = true;
     }
 
     public override void Activate()
     {
-        if (targetRenderer == null)
+        if (!ready)
             return;
         targetRenderer.GetPropertyBlock(mpb);
         mpb.SetColor(colorPropertyId, anomalyColor);
@@ -41,7 +64,7 @@ public class AnomalyColorChange : AnomalyEffectBase
 
     public override void Deactivate()
     {
-        if (targetRenderer == null)
+        if (!ready)
             return;
         targetRenderer.GetPropertyBlock(mpb);
         mpb.SetColor(colorPropertyId, originalColor);
