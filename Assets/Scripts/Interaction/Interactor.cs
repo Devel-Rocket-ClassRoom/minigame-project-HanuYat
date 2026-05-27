@@ -17,14 +17,23 @@ public class Interactor : MonoBehaviour
 
     private void OnEnable()
     {
+        if (interactAction == null || interactAction.action == null)
+        {
+            Debug.LogError("[Interactor] interactAction 미할당 — 비활성.", this);
+            enabled = false;
+            return;
+        }
         interactAction.action.Enable();
         interactAction.action.started += OnInteractPressed;
     }
 
     private void OnDisable()
     {
-        interactAction.action.started -= OnInteractPressed;
-        interactAction.action.Disable();
+        if (interactAction != null && interactAction.action != null)
+        {
+            interactAction.action.started -= OnInteractPressed;
+            interactAction.action.Disable();
+        }
         ClearHover();
     }
 

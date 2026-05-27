@@ -16,8 +16,12 @@ public class GhostChaser : MonoBehaviour
     [SerializeField]
     private float chaseSpeed = 1.0f;
 
+    [SerializeField]
+    private float repathInterval = 0.2f;
+
     private bool armed;
     private bool chasing;
+    private float repathTimer;
     private Vector3 spawnPosition;
     private Quaternion spawnRotation;
 
@@ -58,8 +62,13 @@ public class GhostChaser : MonoBehaviour
         if (chasing)
             return;
         chasing = true;
+        repathTimer = 0f;
         if (agent.isOnNavMesh)
+        {
             agent.isStopped = false;
+            if (player != null)
+                agent.SetDestination(player.position);
+        }
     }
 
     private void Update()
@@ -68,6 +77,11 @@ public class GhostChaser : MonoBehaviour
             return;
         if (!agent.isOnNavMesh)
             return;
+
+        repathTimer -= Time.deltaTime;
+        if (repathTimer > 0f)
+            return;
+        repathTimer = repathInterval;
         agent.SetDestination(player.position);
     }
 

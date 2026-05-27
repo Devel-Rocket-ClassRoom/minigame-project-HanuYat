@@ -17,6 +17,12 @@ public class AnomalyManager : MonoBehaviour
 
     public bool IsAnomalyActive => currentAnomaly != null;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        Instance = null;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -25,6 +31,12 @@ public class AnomalyManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     public void Refresh()
