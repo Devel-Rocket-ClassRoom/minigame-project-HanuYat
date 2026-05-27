@@ -12,6 +12,10 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     public static event Action<DoorDirection> OnDoorUsed;
     public static event Action OnCorridorEntered;
 
+    public static void RaiseDoorUsed(DoorDirection direction) => OnDoorUsed?.Invoke(direction);
+
+    public static void RaiseCorridorEntered() => OnCorridorEntered?.Invoke();
+
     [SerializeField]
     private DoorDirection direction;
 
