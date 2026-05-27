@@ -1,0 +1,100 @@
+# Force LF line endings for all text files regardless of OS.
+# Overrides per-user core.autocrlf settings.
+
+* text=auto eol=lf
+
+# Source code
+*.cs text eol=lf
+*.csx text eol=lf
+*.shader text eol=lf
+*.cginc text eol=lf
+*.hlsl text eol=lf
+*.compute text eol=lf
+
+# Unity YAML assets
+*.unity text eol=lf
+*.asset text eol=lf
+*.mat text eol=lf
+*.prefab text eol=lf
+*.meta text eol=lf
+*.controller text eol=lf
+*.anim text eol=lf
+*.physicMaterial text eol=lf
+*.physicsMaterial2D text eol=lf
+*.playable text eol=lf
+*.mixer text eol=lf
+*.shadergraph text eol=lf
+*.shadersubgraph text eol=lf
+*.preset text eol=lf
+*.lighting text eol=lf
+*.guiskin text eol=lf
+*.fontsettings text eol=lf
+*.flare text eol=lf
+*.terrainlayer text eol=lf
+*.signal text eol=lf
+*.mask text eol=lf
+*.brush text eol=lf
+
+# Config / docs / data
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.xml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.editorconfig text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+*.inputactions text eol=lf
+.csharpierrc text eol=lf
+
+# Scripts
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Binary assets (do not touch line endings)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.tga binary
+*.tiff binary
+*.tif binary
+*.exr binary
+*.hdr binary
+*.psd binary
+*.ico binary
+*.fbx binary
+*.obj binary
+*.blend binary
+*.glb binary
+*.gltf binary
+*.dae binary
+*.3ds binary
+*.max binary
+*.maya binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.aif binary
+*.aiff binary
+*.mp4 binary
+*.mov binary
+*.webm binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.unitypackage binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.zip binary
+*.7z binary
+*.gz binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
