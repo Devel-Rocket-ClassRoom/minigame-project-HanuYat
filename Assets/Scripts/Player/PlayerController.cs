@@ -68,14 +68,20 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        if (cameraTransform == null)
+        {
+            Debug.LogError("[PlayerController] cameraTransform 미할당 — 컴포넌트 비활성화.", this);
+            enabled = false;
+            return;
+        }
         yaw = transform.eulerAngles.y;
-        pitch = cameraTransform != null ? cameraTransform.localEulerAngles.x : 0f;
+        pitch = cameraTransform.localEulerAngles.x;
         if (pitch > 180f)
         {
             pitch -= 360f;
         }
 
-        cameraStandLocalY = cameraTransform != null ? cameraTransform.localPosition.y : 1.6f;
+        cameraStandLocalY = cameraTransform.localPosition.y;
     }
 
     private void OnEnable()
