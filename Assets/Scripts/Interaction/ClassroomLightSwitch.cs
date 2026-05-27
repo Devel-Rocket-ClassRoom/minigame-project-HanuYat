@@ -21,6 +21,10 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
     private bool isOn;
 
+    public bool IsOn => isOn;
+
+    public event System.Action<bool> LightStateChanged;
+
     private void Awake()
     {
         ApplyState(startOn);
@@ -62,5 +66,7 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
         }
 
         isOn = on;
+
+        LightStateChanged?.Invoke(on);
     }
 }
