@@ -11,29 +11,31 @@
 *.hlsl text eol=lf
 *.compute text eol=lf
 
-# Unity YAML assets
-*.unity text eol=lf
-*.asset text eol=lf
-*.mat text eol=lf
-*.prefab text eol=lf
-*.meta text eol=lf
-*.controller text eol=lf
-*.anim text eol=lf
-*.physicMaterial text eol=lf
-*.physicsMaterial2D text eol=lf
-*.playable text eol=lf
-*.mixer text eol=lf
-*.shadergraph text eol=lf
-*.shadersubgraph text eol=lf
-*.preset text eol=lf
-*.lighting text eol=lf
-*.guiskin text eol=lf
-*.fontsettings text eol=lf
-*.flare text eol=lf
-*.terrainlayer text eol=lf
-*.signal text eol=lf
-*.mask text eol=lf
-*.brush text eol=lf
+# Unity assets — binary marking prevents Git from line-end-normalizing
+# binary-format scene/asset files (which would corrupt them).
+# Unity itself handles its own LF/CRLF for text YAML serialization.
+*.unity binary
+*.asset binary
+*.mat binary
+*.prefab binary
+*.meta binary
+*.controller binary
+*.anim binary
+*.physicMaterial binary
+*.physicsMaterial2D binary
+*.playable binary
+*.mixer binary
+*.shadergraph binary
+*.shadersubgraph binary
+*.preset binary
+*.lighting binary
+*.guiskin binary
+*.fontsettings binary
+*.flare binary
+*.terrainlayer binary
+*.signal binary
+*.mask binary
+*.brush binary
 
 # Config / docs / data
 *.json text eol=lf
