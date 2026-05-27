@@ -19,6 +19,7 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
+    private MaterialPropertyBlock mpb;
     private bool isOn;
 
     public bool IsOn => isOn;
@@ -27,6 +28,15 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
     private void Awake()
     {
+        mpb = new MaterialPropertyBlock();
+        if (ledRenderers != null)
+        {
+            foreach (Renderer r in ledRenderers)
+            {
+                if (r != null && r.sharedMaterial != null)
+                    r.sharedMaterial.EnableKeyword("_EMISSION");
+            }
+        }
         ApplyState(startOn);
     }
 
@@ -61,8 +71,9 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
         Color ledColor = on ? emissionOnColor : Color.black;
         foreach (Renderer r in ledRenderers)
         {
-            r.material.SetColor(EmissionColorId, ledColor);
-            r.material.EnableKeyword("_EMISSION");
+            r.GetPropertyBlock(mpb);
+            mpb.SetColor(EmissionColorId, ledColor);
+            r.SetPropertyBlock(mpb);
         }
 
         isOn = on;

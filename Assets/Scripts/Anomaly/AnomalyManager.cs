@@ -13,7 +13,7 @@ public class AnomalyManager : MonoBehaviour
     private List<AnomalyEffectBase> candidates = new();
 
     private AnomalyEffectBase currentAnomaly;
-    private AnomalyEffectBase previousAnomaly;
+    private readonly HashSet<AnomalyEffectBase> recentlyUsed = new();
 
     public bool IsAnomalyActive => currentAnomaly != null;
 
@@ -30,18 +30,27 @@ public class AnomalyManager : MonoBehaviour
     public void Refresh()
     {
         currentAnomaly?.Deactivate();
-        previousAnomaly = currentAnomaly;
+        AnomalyEffectBase lastPicked = currentAnomaly;
         currentAnomaly = null;
 
         if (candidates.Count == 0 || Random.value >= anomalyProbability)
             return;
 
-        List<AnomalyEffectBase> pool = candidates.Where(c => c != previousAnomaly).ToList();
+        List<AnomalyEffectBase> pool = candidates.Where(c => !recentlyUsed.Contains(c)).ToList();
         if (pool.Count == 0)
-            pool = candidates;
+        {
+            // 사이클 완료 — 직전 발생 1개만 유지해 경계에서 즉시 재출현 방지
+            recentlyUsed.Clear();
+            if (lastPicked != null)
+                recentlyUsed.Add(lastPicked);
+            pool = candidates.Where(c => !recentlyUsed.Contains(c)).ToList();
+            if (pool.Count == 0)
+                pool = candidates;
+        }
         AnomalyEffectBase picked = pool[Random.Range(0, pool.Count)];
 
         currentAnomaly = picked;
+        recentlyUsed.Add(picked);
         currentAnomaly.Activate();
     }
 }
