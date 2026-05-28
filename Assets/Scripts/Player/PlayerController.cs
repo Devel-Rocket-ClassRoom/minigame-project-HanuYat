@@ -65,6 +65,8 @@ public class PlayerController : MonoBehaviour
     private bool isCrouching;
     private float cameraStandLocalY;
 
+    public bool IsCrouching => isCrouching;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
