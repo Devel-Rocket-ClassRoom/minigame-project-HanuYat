@@ -97,6 +97,12 @@ public class PlayerController : MonoBehaviour
         {
             enabled = false;
         }
+
+        if (SettingsManager.Instance != null)
+        {
+            lookSensitivity = SettingsManager.Instance.MouseSensitivity;
+            SettingsManager.Instance.OnMouseSensitivityChanged += OnSensitivityChanged;
+        }
     }
 
     private void OnDisable()
@@ -105,6 +111,14 @@ public class PlayerController : MonoBehaviour
         TryDisable(lookAction);
         TryDisable(sprintAction);
         TryDisable(crouchAction);
+
+        if (SettingsManager.Instance != null)
+            SettingsManager.Instance.OnMouseSensitivityChanged -= OnSensitivityChanged;
+    }
+
+    private void OnSensitivityChanged(float value)
+    {
+        lookSensitivity = value;
     }
 
     private bool TryEnable(InputActionReference reference, string fieldName)

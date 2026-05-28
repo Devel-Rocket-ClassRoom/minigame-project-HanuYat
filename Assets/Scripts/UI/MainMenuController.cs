@@ -21,6 +21,9 @@ public class MainMenuController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
     }
 
     public void OnStartClicked()
