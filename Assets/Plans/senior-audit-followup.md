@@ -6,6 +6,27 @@
 
 ---
 
+## 진행 현황 (2026-05-28 갱신)
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| H1 Application Identifier | ✅ 완료 | `com.develrocket.weirdfriday` 3 플랫폼 동일 적용 |
+| H2 OnGoalReached 후속 | 🔗 이관 | Issue #11 ("출구 시퀀스 & 클리어 화면", milestone 빌드3) 에서 트래킹 |
+| M1 scriptingDefineSymbols | ✅ 완료 | Standalone: `URP_OUTLINE` 만 잔존 |
+| M2 EditorBuildSettings configObject | ✅ 완료 | `com.unity.dt.app-ui` 제거 |
+| M3 Audio 시스템 + A07 | 🔗 이관 | Issue #13 (사운드) 에서 트래킹 |
+| M4 Mobile vSync | ⏭️ 스킵 확정 | PC only 결정 — Mobile 빌드 안 함. PC `vSyncCount: 0`은 디버깅용으로 유지 |
+| L1 Interactor.maxDistance | ⏸️ 유예 | playtest 기반 결정, 코드 변경 불필요 |
+| L2 Stack trace 최적화 | ⚠️ 검증 결과 작업 불필요 | `m_StackTraceTypes`가 이미 5개 LogType 전부 ScriptOnly (Unity 6 기본값). 플랜이 "Full" 로 잘못 읽었음 |
+| L3 Standalone IL2CPP | ⏸️ 유예 | 출시 직전. 1주차 빌드 시 toolchain 이슈로 실패 이력 — VS C++ workload 사전 설치 필요 |
+| L4 Splash screen | ⏸️ 유예 | 라이센스 확인 후 |
+
+H1/M1/M2 작업은 우산 이슈 #14 의 일부로 처리.
+
+---
+
+---
+
 ## 작성 배경
 
 - PR #43 (`feature/issue-14-code-audit-polish-2`) 머지로 코드 감사 폴리싱 2차 완료. AnomalyMaterialSwap leak fix, InputAction null guard, GhostChaser repath throttle, AnomalyManager Instance reset, AnomalyColorChange property guard, CLAUDE.md 운영 룰 문서화.
