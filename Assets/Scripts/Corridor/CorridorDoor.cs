@@ -28,8 +28,15 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     [SerializeField]
     private PlayerController playerController;
 
+    [SerializeField]
+    private JudgementSystem judgement;
+
+    [SerializeField]
+    private ExitSequence exitSequence;
+
     private CharacterController characterController;
     private bool inTransition;
+    private bool pendingClear;
 
     private void Start()
     {
@@ -50,6 +57,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             return;
         }
 
+        pendingClear = judgement != null && judgement.WouldClearOnDoorUse(direction);
         inTransition = true;
         OnDoorUsed?.Invoke(direction);
         playerController.enabled = false;
@@ -59,29 +67,37 @@ public class CorridorDoor : MonoBehaviour, IInteractable
 
     private void OnMidpoint()
     {
-        CharacterController cc = characterController;
-        bool ccEnabled = cc != null && cc.enabled;
-        if (cc != null)
-            cc.enabled = false;
+        if (!pendingClear)
+        {
+            CharacterController cc = characterController;
+            bool ccEnabled = cc != null && cc.enabled;
+            if (cc != null)
+                cc.enabled = false;
 
-        playerController.transform.SetPositionAndRotation(
-            spawnPoint.position,
-            Quaternion.Euler(0f, spawnPoint.eulerAngles.y, 0f)
-        );
+            playerController.transform.SetPositionAndRotation(
+                spawnPoint.position,
+                Quaternion.Euler(0f, spawnPoint.eulerAngles.y, 0f)
+            );
 
-        if (cc != null)
-            cc.enabled = ccEnabled;
+            if (cc != null)
+                cc.enabled = ccEnabled;
 
-        playerController.ResetLook();
+            playerController.ResetLook();
 
-        ResettableRegistry.ResetAll();
+            ResettableRegistry.ResetAll();
 
-        AnomalyManager.Instance?.Refresh();
+            AnomalyManager.Instance?.Refresh();
+        }
+        else
+        {
+            exitSequence?.TriggerClear();
+        }
     }
 
     private void OnComplete()
     {
-        playerController.enabled = true;
+        if (!pendingClear)
+            playerController.enabled = true;
         inTransition = false;
         OnCorridorEntered?.Invoke();
     }

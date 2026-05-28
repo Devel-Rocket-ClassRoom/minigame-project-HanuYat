@@ -15,6 +15,18 @@ public class JudgementSystem : MonoBehaviour
 
     public int Current => current;
 
+    public int Goal => counterUI != null ? counterUI.Goal : 0;
+
+    public bool WouldClearOnDoorUse(CorridorDoor.DoorDirection direction)
+    {
+        if (counterUI == null)
+            return false;
+        bool anomalyActive =
+            AnomalyManager.Instance != null && AnomalyManager.Instance.IsAnomalyActive;
+        bool exitCandidate = direction == CorridorDoor.DoorDirection.Forward && !anomalyActive;
+        return exitCandidate && current >= counterUI.Goal - 1;
+    }
+
     private void OnEnable()
     {
         CorridorDoor.OnDoorUsed += HandleDoorUsed;
