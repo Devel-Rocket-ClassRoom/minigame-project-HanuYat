@@ -64,6 +64,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 verticalVelocity;
     private bool isCrouching;
     private float cameraStandLocalY;
+    private float initialCenterY;
+    private float initialHeight;
 
     public bool IsCrouching => isCrouching;
 
@@ -84,6 +86,8 @@ public class PlayerController : MonoBehaviour
         }
 
         cameraStandLocalY = cameraTransform.localPosition.y;
+        initialCenterY = controller.center.y;
+        initialHeight = controller.height;
     }
 
     private void OnEnable()
@@ -170,7 +174,11 @@ public class PlayerController : MonoBehaviour
                 targetHeight,
                 crouchTransitionSpeed * Time.deltaTime
             );
-            controller.center = new Vector3(0f, controller.height * 0.5f, 0f);
+            controller.center = new Vector3(
+                0f,
+                initialCenterY - (initialHeight - controller.height) * 0.5f,
+                0f
+            );
         }
 
         Vector2 move = moveAction.action.ReadValue<Vector2>();
@@ -231,6 +239,18 @@ public class PlayerController : MonoBehaviour
     {
         float radius = controller.radius;
         Vector3 checkCenter = transform.position + Vector3.up * (standHeight - radius);
-        return !Physics.CheckSphere(checkCenter, radius, ~0, QueryTriggerInteraction.Ignore);
+        Collider[] hits = Physics.OverlapSphere(
+            checkCenter,
+            radius,
+            ~0,
+            QueryTriggerInteraction.Ignore
+        );
+        foreach (Collider hit in hits)
+        {
+            // 플레이어 자신의 CharacterController 캡슐은 무시 (천장 등 외부 장애물만 검사).
+            if (hit != controller)
+                return false;
+        }
+        return true;
     }
 }

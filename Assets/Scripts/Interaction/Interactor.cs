@@ -12,8 +12,17 @@ public class Interactor : MonoBehaviour
     [SerializeField]
     private LayerMask interactableLayer;
 
+    [SerializeField]
+    private PlayerController playerController;
+
     private InteractableOutline currentHover;
     private IInteractable currentInteractable;
+
+    private void Awake()
+    {
+        if (playerController == null)
+            playerController = GetComponentInParent<PlayerController>();
+    }
 
     private void OnEnable()
     {
@@ -39,6 +48,14 @@ public class Interactor : MonoBehaviour
 
     private void Update()
     {
+        // player 비활성(pause / 페이드 전환 / Ghost·Bird·Exit 시퀀스) 중엔 상호작용 차단.
+        if (playerController == null || !playerController.enabled)
+        {
+            if (currentHover != null || currentInteractable != null)
+                ClearHover();
+            return;
+        }
+
         InteractableOutline hoverHit = null;
         IInteractable interactHit = null;
 
@@ -81,6 +98,8 @@ public class Interactor : MonoBehaviour
 
     private void OnInteractPressed(InputAction.CallbackContext ctx)
     {
+        if (playerController == null || !playerController.enabled)
+            return;
         currentInteractable?.Interact();
     }
 

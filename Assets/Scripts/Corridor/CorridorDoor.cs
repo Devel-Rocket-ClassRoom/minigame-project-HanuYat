@@ -97,8 +97,10 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     private void OnComplete()
     {
         if (!pendingClear)
+        {
             playerController.enabled = true;
+            OnCorridorEntered?.Invoke();
+        }
         inTransition = false;
-        OnCorridorEntered?.Invoke();
     }
 }
