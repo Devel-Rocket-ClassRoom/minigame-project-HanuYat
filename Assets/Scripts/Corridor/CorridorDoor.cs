@@ -57,6 +57,14 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             return;
         }
 
+        // 턴 목표 게이트: 책 미회수 시 전환 차단(힌트 표시).
+        // inTransition/OnDoorUsed/pendingClear 세팅 전에 return → JudgementSystem 카운터 desync 없음.
+        if (TurnObjective.Instance != null && !TurnObjective.Instance.IsBookCollected)
+        {
+            HintMessage.Instance?.ShowLocked();
+            return;
+        }
+
         pendingClear = judgement != null && judgement.WouldClearOnDoorUse(direction);
         inTransition = true;
         OnDoorUsed?.Invoke(direction);
