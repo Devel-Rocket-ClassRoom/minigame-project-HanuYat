@@ -53,6 +53,9 @@ public class PauseController : MonoBehaviour
     {
         if (isReturningToMenu)
             return;
+        // 페이드 전환 / Ghost·Bird·Exit 시퀀스 중 = player 비활성 → pause 차단 (resume은 허용).
+        if (!isPaused && playerController != null && !playerController.enabled)
+            return;
         TogglePause();
     }
 
