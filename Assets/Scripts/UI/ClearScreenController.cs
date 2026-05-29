@@ -27,6 +27,11 @@ public class ClearScreenController : MonoBehaviour
 
     public void Show()
     {
+        // Canvas 루트가 비활성이면 패널만 켜도 activeInHierarchy=false라 렌더되지 않는다.
+        // 루트를 먼저 활성화하면 첫 활성화 시 Awake가 실행되어 패널 숨김 + 버튼 리스너 등록이 보장된다.
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
         if (panel != null)
             panel.SetActive(true);
     }
