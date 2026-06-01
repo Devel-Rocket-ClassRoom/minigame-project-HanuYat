@@ -20,6 +20,10 @@ public class AnomalyBirds : AnomalyEffectBase
 
     private void Awake()
     {
+        if (birdRoots == null)
+            birdRoots = new GameObject[0];
+        if (birdWanders == null)
+            birdWanders = new BirdWander[0];
         foreach (var root in birdRoots)
             if (root != null)
                 root.SetActive(false);

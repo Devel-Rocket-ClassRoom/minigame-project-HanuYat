@@ -16,6 +16,8 @@ public class BirdDiver : MonoBehaviour
 
     public void LaunchDive(Vector3 playerPos)
     {
+        // 재진입 방어: 이전 다이브/비활성화 코루틴 잔여 정리 후 시작 (중복 DiveRoutine 방지).
+        StopAllCoroutines();
         // 와운더 중단 후 돌진
         GetComponent<BirdWander>()?.StopWander();
         isDiving = true;

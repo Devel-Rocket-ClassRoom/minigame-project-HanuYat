@@ -57,6 +57,14 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             return;
         }
 
+        // 첫 턴 후진 차단: 들어온 문(Backward)으로는 나갈 수 없다 — 출구로 전진해야 한다.
+        // 책 게이트보다 먼저 → 후진 문은 책 회수 여부와 무관하게 항상 안내.
+        if (direction == DoorDirection.Backward && judgement != null && judgement.IsFirstTurn)
+        {
+            HintMessage.Instance?.ShowEntrance();
+            return;
+        }
+
         // 턴 목표 게이트: 책 미회수 시 전환 차단(힌트 표시).
         // inTransition/OnDoorUsed/pendingClear 세팅 전에 return → JudgementSystem 카운터 desync 없음.
         if (TurnObjective.Instance != null && !TurnObjective.Instance.IsBookCollected)

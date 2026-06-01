@@ -16,6 +16,8 @@ public class AnomalyLightChange : AnomalyEffectBase
 
     private void Awake()
     {
+        if (targetLights == null)
+            targetLights = new Light[0];
         originalColors = new Color[targetLights.Length];
         originalIntensities = new float[targetLights.Length];
         for (int i = 0; i < targetLights.Length; i++)
