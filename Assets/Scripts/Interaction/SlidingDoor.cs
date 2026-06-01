@@ -14,6 +14,19 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
     [SerializeField]
     private float slideDuration = 0.35f;
 
+    // 교실 문일 경우: 첫 오픈 시 책상 위치/불 켜기 힌트 1회 표시.
+    [SerializeField]
+    private bool showClassroomHintOnFirstOpen = false;
+
+    // 앞/뒤 문 어느 쪽으로 들어와도 1회만 뜨도록 공유.
+    private static bool classroomHintShown;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        classroomHintShown = false;
+    }
+
     private Transform Door => doorToMove != null ? doorToMove : transform;
 
     private Vector3 closedPos;
@@ -37,6 +50,13 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
 
     public void Interact()
     {
+        // 닫힘 → 열림(첫 오픈) 시점에 교실 힌트 1회.
+        if (showClassroomHintOnFirstOpen && !classroomHintShown && !isOpen)
+        {
+            classroomHintShown = true;
+            HintMessage.Instance?.ShowClassroom();
+        }
+
         if (slideCoroutine != null)
             StopCoroutine(slideCoroutine);
         slideCoroutine = StartCoroutine(Slide(!isOpen));

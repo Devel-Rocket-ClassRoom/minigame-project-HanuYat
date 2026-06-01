@@ -16,6 +16,8 @@ public class AnomalyTransformChange : AnomalyEffectBase
 
     private void Awake()
     {
+        if (targets == null)
+            targets = new Transform[0];
         originalPositions = new Vector3[targets.Length];
         originalRotations = new Quaternion[targets.Length];
         for (int i = 0; i < targets.Length; i++)

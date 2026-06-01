@@ -14,6 +14,10 @@ public class FadeController : MonoBehaviour
     [SerializeField]
     private float midpointHold = 0.1f;
 
+    // 씬 로드 시 검은 화면에서 시작해 페이드인 — 인터스티셜→게임 씬 진입 연출용.
+    [SerializeField]
+    private bool fadeInOnStart = false;
+
     private Coroutine transitionCoroutine;
 
     private void Awake()
@@ -21,10 +25,28 @@ public class FadeController : MonoBehaviour
         if (fadeImage != null)
         {
             Color c = fadeImage.color;
-            c.a = 0f;
+            c.a = fadeInOnStart ? 1f : 0f;
             fadeImage.color = c;
-            fadeImage.raycastTarget = false;
+            fadeImage.raycastTarget = fadeInOnStart;
         }
+    }
+
+    private void Start()
+    {
+        if (fadeInOnStart)
+        {
+            if (transitionCoroutine != null)
+                StopCoroutine(transitionCoroutine);
+            transitionCoroutine = StartCoroutine(FadeInRoutine());
+        }
+    }
+
+    private IEnumerator FadeInRoutine()
+    {
+        yield return Fade(1f, 0f);
+        if (fadeImage != null)
+            fadeImage.raycastTarget = false;
+        transitionCoroutine = null;
     }
 
     public void StartTransition(Action onMidpoint, Action onComplete = null)
@@ -32,6 +54,23 @@ public class FadeController : MonoBehaviour
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
         transitionCoroutine = StartCoroutine(TransitionRoutine(onMidpoint, onComplete));
+    }
+
+    // 페이드 아웃(0→1)만 하고 검은 화면 유지 — 인터스티셜(스토리 창)용.
+    public void FadeOut(Action onComplete = null)
+    {
+        if (transitionCoroutine != null)
+            StopCoroutine(transitionCoroutine);
+        transitionCoroutine = StartCoroutine(FadeOutRoutine(onComplete));
+    }
+
+    private IEnumerator FadeOutRoutine(Action onComplete)
+    {
+        if (fadeImage != null)
+            fadeImage.raycastTarget = true;
+        yield return Fade(0f, 1f);
+        transitionCoroutine = null;
+        onComplete?.Invoke();
     }
 
     private IEnumerator TransitionRoutine(Action onMidpoint, Action onComplete)

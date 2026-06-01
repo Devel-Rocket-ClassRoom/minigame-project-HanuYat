@@ -25,6 +25,12 @@ public class ClearScreenController : MonoBehaviour
         mainMenuButton?.onClick.AddListener(OnMainMenu);
     }
 
+    private void OnDestroy()
+    {
+        restartButton?.onClick.RemoveListener(OnRestart);
+        mainMenuButton?.onClick.RemoveListener(OnMainMenu);
+    }
+
     public void Show()
     {
         // Canvas 루트가 비활성이면 패널만 켜도 activeInHierarchy=false라 렌더되지 않는다.

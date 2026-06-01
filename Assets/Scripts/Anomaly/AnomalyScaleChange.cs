@@ -18,6 +18,8 @@ public class AnomalyScaleChange : AnomalyEffectBase
 
     private void Awake()
     {
+        if (targets == null)
+            targets = new Transform[0];
         originalScales = new Vector3[targets.Length];
         targetScales = new Vector3[targets.Length];
         for (int i = 0; i < targets.Length; i++)

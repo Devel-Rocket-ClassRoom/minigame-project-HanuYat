@@ -1,21 +1,25 @@
-using System;
 using UnityEngine;
 
 public class JudgementSystem : MonoBehaviour
 {
-    public static event Action OnGoalReached;
-
     [SerializeField]
     private CounterUI counterUI;
+
+    // 첫 턴(튜토리얼)은 무조건 점수 0 — 종이+슬롯이 0개로 깨끗하게 등장하도록.
+    [SerializeField]
+    private bool suppressFirstTurnScore = true;
 
     private int current;
     private int pendingCount;
     private bool hasPending;
-    private bool goalReached;
+    private bool firstTurnConsumed;
 
     public int Current => current;
 
     public int Goal => counterUI != null ? counterUI.Goal : 0;
+
+    // 첫 턴(튜토리얼) 여부 — 아직 첫 문 사용 전. 첫 턴엔 후진(들어온 문) 차단에 사용.
+    public bool IsFirstTurn => suppressFirstTurnScore && !firstTurnConsumed;
 
     public bool WouldClearOnDoorUse(CorridorDoor.DoorDirection direction)
     {
@@ -53,6 +57,15 @@ public class JudgementSystem : MonoBehaviour
             return;
         }
 
+        // 첫 턴 튜토리얼: 정답 여부 무관 점수 0 유지 → 종이+슬롯 0개로 등장.
+        if (suppressFirstTurnScore && !firstTurnConsumed)
+        {
+            firstTurnConsumed = true;
+            pendingCount = 0;
+            hasPending = true;
+            return;
+        }
+
         bool anomalyActive =
             AnomalyManager.Instance != null && AnomalyManager.Instance.IsAnomalyActive;
         bool correct =
@@ -60,9 +73,6 @@ public class JudgementSystem : MonoBehaviour
             || (direction == CorridorDoor.DoorDirection.Backward && anomalyActive);
 
         pendingCount = correct ? Mathf.Min(current + 1, counterUI.Goal) : 0;
-        if (!correct)
-            goalReached = false;
-
         hasPending = true;
     }
 
@@ -74,12 +84,5 @@ public class JudgementSystem : MonoBehaviour
         hasPending = false;
         current = pendingCount;
         counterUI.UpdateCounter(current);
-
-        if (current >= counterUI.Goal && !goalReached)
-        {
-            goalReached = true;
-            Debug.Log("[JudgementSystem] Goal reached — exit sequence event fired.");
-            OnGoalReached?.Invoke();
-        }
     }
 }
