@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,6 +14,10 @@ public class ClearScreenController : MonoBehaviour
     [SerializeField]
     private Button mainMenuButton;
 
+    // 자막을 먼저 보여주고 버튼은 이만큼 뒤에 노출(감정 종결 강조).
+    [SerializeField]
+    private float buttonRevealDelay = 1.5f;
+
     [SerializeField]
     private string mainMenuSceneName = "MainMenu Scene";
 
@@ -20,6 +25,12 @@ public class ClearScreenController : MonoBehaviour
     {
         if (panel != null)
             panel.SetActive(false);
+
+        // 버튼은 자막 노출 후 지연 등장 — 시작 시 숨김.
+        if (restartButton != null)
+            restartButton.gameObject.SetActive(false);
+        if (mainMenuButton != null)
+            mainMenuButton.gameObject.SetActive(false);
 
         restartButton?.onClick.AddListener(OnRestart);
         mainMenuButton?.onClick.AddListener(OnMainMenu);
@@ -40,6 +51,19 @@ public class ClearScreenController : MonoBehaviour
 
         if (panel != null)
             panel.SetActive(true);
+
+        // 자막 먼저 → 버튼 나중.
+        StartCoroutine(RevealButtonsRoutine());
+    }
+
+    private IEnumerator RevealButtonsRoutine()
+    {
+        yield return new WaitForSecondsRealtime(buttonRevealDelay);
+
+        if (restartButton != null)
+            restartButton.gameObject.SetActive(true);
+        if (mainMenuButton != null)
+            mainMenuButton.gameObject.SetActive(true);
     }
 
     private void OnRestart()
