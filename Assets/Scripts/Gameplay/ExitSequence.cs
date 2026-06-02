@@ -28,6 +28,13 @@ public class ExitSequence : MonoBehaviour
     [SerializeField]
     private CanvasGroup whiteout;
 
+    // 화이트아웃과 함께 페이드인하는 숲 새소리 루프(바깥 도착 신호). BGM 그룹 라우팅. 비우면 무음.
+    [SerializeField]
+    private AudioSource birdsAmbience;
+
+    [SerializeField]
+    private float birdsTargetVolume = 1f;
+
     // 암전 시점에 플레이어를 출구 문 정면으로 텔레포트할 기준점(출구 앞, 문 바라보는 방향).
     [SerializeField]
     private Transform exitStandPoint;
@@ -169,6 +176,15 @@ public class ExitSequence : MonoBehaviour
         Vector3 camBaseLocal = cameraTransform != null ? cameraTransform.localPosition : Vector3.zero;
         float startAlpha = whiteout != null ? whiteout.alpha : 0f;
 
+        // 새소리 루프 시작(볼륨 0 → 화이트아웃과 동기 페이드인).
+        if (birdsAmbience != null)
+        {
+            birdsAmbience.loop = true;
+            birdsAmbience.volume = 0f;
+            if (!birdsAmbience.isPlaying)
+                birdsAmbience.Play();
+        }
+
         Vector3 startPos = Vector3.zero;
         Vector3 endPos = Vector3.zero;
         bool canWalk = playerController != null;
@@ -200,10 +216,14 @@ public class ExitSequence : MonoBehaviour
                 cameraTransform.localPosition = camBaseLocal + new Vector3(swayX, bobY, 0f);
             }
 
-            if (whiteout != null)
+            if (whiteout != null || birdsAmbience != null)
             {
                 float wt = Mathf.InverseLerp(whiteoutStartFraction, 1f, t);
-                whiteout.alpha = Mathf.SmoothStep(startAlpha, 1f, wt);
+                float s = Mathf.SmoothStep(0f, 1f, wt);
+                if (whiteout != null)
+                    whiteout.alpha = Mathf.Lerp(startAlpha, 1f, s);
+                if (birdsAmbience != null)
+                    birdsAmbience.volume = s * birdsTargetVolume;
             }
 
             elapsed += Time.unscaledDeltaTime;
@@ -216,6 +236,8 @@ public class ExitSequence : MonoBehaviour
             cameraTransform.localPosition = camBaseLocal;
         if (whiteout != null)
             whiteout.alpha = 1f;
+        if (birdsAmbience != null)
+            birdsAmbience.volume = birdsTargetVolume;
     }
 
     // 타임스케일 무관 대기 (unscaledDeltaTime 누적).

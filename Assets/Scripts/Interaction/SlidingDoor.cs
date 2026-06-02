@@ -18,6 +18,17 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
     [SerializeField]
     private bool showClassroomHintOnFirstOpen = false;
 
+    [Header("SFX (선택)")]
+    // 문 위치에서 재생할 3D AudioSource (SFX 믹서 그룹 라우팅). 비우면 무음.
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip openClip;
+
+    [SerializeField]
+    private AudioClip closeClip;
+
     // 앞/뒤 문 어느 쪽으로 들어와도 1회만 뜨도록 공유.
     private static bool classroomHintShown;
 
@@ -50,16 +61,28 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
 
     public void Interact()
     {
+        bool opening = !isOpen;
+
         // 닫힘 → 열림(첫 오픈) 시점에 교실 힌트 1회.
-        if (showClassroomHintOnFirstOpen && !classroomHintShown && !isOpen)
+        if (showClassroomHintOnFirstOpen && !classroomHintShown && opening)
         {
             classroomHintShown = true;
             HintMessage.Instance?.ShowClassroom();
         }
 
+        // SFX는 플레이어 상호작용 시점에만. Slide/ResetToDefault에 두면
+        // 복도 리셋(매 텔레포트)마다 닫힘음이 울린다.
+        PlaySfx(opening ? openClip : closeClip);
+
         if (slideCoroutine != null)
             StopCoroutine(slideCoroutine);
-        slideCoroutine = StartCoroutine(Slide(!isOpen));
+        slideCoroutine = StartCoroutine(Slide(opening));
+    }
+
+    private void PlaySfx(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+            audioSource.PlayOneShot(clip);
     }
 
     public void ResetToDefault()
