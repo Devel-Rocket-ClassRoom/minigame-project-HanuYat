@@ -55,6 +55,10 @@ public class AnomalyBirds : AnomalyEffectBase
         foreach (var root in birdRoots)
             if (root != null)
                 root.SetActive(true);
+        // birdDiver 명시적 재활성 — Awake/Deactivate에서 끄므로 대칭 보장.
+        // (birdRoots 중복 포함에 의존하지 않도록 — 빠지면 비활성 객체 LaunchDive 소프트락.)
+        if (birdDiver != null)
+            birdDiver.gameObject.SetActive(true);
         foreach (var wander in birdWanders)
             if (wander != null)
                 wander.StartWander();

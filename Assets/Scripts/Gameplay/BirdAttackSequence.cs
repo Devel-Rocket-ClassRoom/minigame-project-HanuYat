@@ -36,6 +36,7 @@ public class BirdAttackSequence : MonoBehaviour
     private bool inTransition;
     private Vector3 originalCameraLocalPos;
     private Coroutine lookAtBirdCoroutine;
+    private PlayerFootsteps footsteps;
 
     private void OnEnable()
     {
@@ -69,9 +70,16 @@ public class BirdAttackSequence : MonoBehaviour
             return;
         }
 
+        // 전역 전환 락 — CorridorDoor/귀신 피격과 FadeController 공유 충돌 방지.
+        if (!fadeController.TryLockTransition())
+            return;
+
         inTransition = true;
         originalCameraLocalPos = cameraTransform.localPosition;
         playerController.enabled = false;
+        footsteps = playerController.GetComponent<PlayerFootsteps>();
+        if (footsteps != null)
+            footsteps.enabled = false;
         birdDiver.LaunchDive(playerController.transform.position);
         lookAtBirdCoroutine = StartCoroutine(LookAtBirdRoutine());
     }
@@ -154,7 +162,10 @@ public class BirdAttackSequence : MonoBehaviour
     private void OnComplete()
     {
         playerController.enabled = true;
+        if (footsteps != null)
+            footsteps.enabled = true;
         inTransition = false;
+        fadeController.UnlockTransition();
         CorridorDoor.RaiseCorridorEntered();
     }
 }

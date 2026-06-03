@@ -20,6 +20,22 @@ public class FadeController : MonoBehaviour
 
     private Coroutine transitionCoroutine;
 
+    // 시퀀스 전역 전환 락 — CorridorDoor/Ghost/Bird가 같은 FadeController를 공유하므로,
+    // 한 시퀀스 진행 중(페이드 前 카메라 연출 포함) 다른 시퀀스가 StartTransition으로
+    // 첫 코루틴을 죽여 OnComplete 미실행 → inTransition 고착(소프트락)되는 것을 방지.
+    private bool transitionLocked;
+
+    // 진행 중이 아니면 락 획득 후 true, 이미 잠겨 있으면 false.
+    public bool TryLockTransition()
+    {
+        if (transitionLocked)
+            return false;
+        transitionLocked = true;
+        return true;
+    }
+
+    public void UnlockTransition() => transitionLocked = false;
+
     private void Awake()
     {
         if (fadeImage != null)

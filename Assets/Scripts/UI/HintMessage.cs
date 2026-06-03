@@ -181,6 +181,13 @@ public class HintMessage : MonoBehaviour
         if (modal == null)
             return;
 
+        // 루프백 시퀀스(weird→paper) 진행 중이면 정지 — 잔존 시 신규 모달과 충돌.
+        if (sequenceCoroutine != null)
+        {
+            StopCoroutine(sequenceCoroutine);
+            sequenceCoroutine = null;
+        }
+
         // 다른 힌트가 떠 있으면 먼저 닫는다.
         if (active != null && active != modal)
             CloseModal(active);

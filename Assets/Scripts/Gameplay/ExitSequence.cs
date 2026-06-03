@@ -107,7 +107,13 @@ public class ExitSequence : MonoBehaviour
         TeleportToExit();
 
         if (playerController != null)
+        {
             playerController.enabled = false;
+            // 컷씬 중 동결 velocity로 인한 발소리 차단(엔딩이라 복귀 없음).
+            PlayerFootsteps footsteps = playerController.GetComponent<PlayerFootsteps>();
+            if (footsteps != null)
+                footsteps.enabled = false;
+        }
 
         StartCoroutine(EndingRoutine());
     }
