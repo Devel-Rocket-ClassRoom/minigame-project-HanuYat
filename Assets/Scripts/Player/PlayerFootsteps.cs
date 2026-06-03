@@ -44,11 +44,16 @@ public class PlayerFootsteps : MonoBehaviour
     [SerializeField]
     private float pitchJitter = 0.06f;
 
+    // 두 발소리 사이 최소 간격(s) — isGrounded 떨림/탭 이동에 의한 즉시-첫-보 난사 방지.
+    [SerializeField]
+    private float minStepInterval = 0.18f;
+
     private CharacterController controller;
     private PlayerController player;
     private float distanceAccum;
     private int lastIndex = -1;
     private bool wasMoving;
+    private float lastStepTime = -999f;
 
     private void Awake()
     {
@@ -98,6 +103,11 @@ public class PlayerFootsteps : MonoBehaviour
 
     private void PlayStep(bool running)
     {
+        // 최소 간격 게이트 — 즉시-첫-보 + 누적 양 경로 공통 차단.
+        if (Time.time - lastStepTime < minStepInterval)
+            return;
+        lastStepTime = Time.time;
+
         AudioClip[] pool =
             running && runClips != null && runClips.Length > 0 ? runClips : walkClips;
         if (audioSource == null || pool == null || pool.Length == 0)

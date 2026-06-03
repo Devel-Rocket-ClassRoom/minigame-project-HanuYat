@@ -32,6 +32,7 @@ public class GhostCatchSequence : MonoBehaviour
 
     private bool inTransition;
     private Vector3 originalCameraLocalPos;
+    private PlayerFootsteps footsteps;
 
     private void OnEnable()
     {
@@ -64,9 +65,16 @@ public class GhostCatchSequence : MonoBehaviour
             return;
         }
 
+        // 전역 전환 락 — CorridorDoor/새 피격과 FadeController 공유 충돌 방지.
+        if (!fadeController.TryLockTransition())
+            return;
+
         inTransition = true;
         anomalyGhost.ForceVisible();
         playerController.enabled = false;
+        footsteps = playerController.GetComponent<PlayerFootsteps>();
+        if (footsteps != null)
+            footsteps.enabled = false;
         StartCoroutine(CatchRoutine());
     }
 
@@ -137,7 +145,10 @@ public class GhostCatchSequence : MonoBehaviour
     private void OnComplete()
     {
         playerController.enabled = true;
+        if (footsteps != null)
+            footsteps.enabled = true;
         inTransition = false;
+        fadeController.UnlockTransition();
 
         // JudgementSystem.ApplyPending → 카운터 0 적용 + pulse/SFX.
         CorridorDoor.RaiseCorridorEntered();

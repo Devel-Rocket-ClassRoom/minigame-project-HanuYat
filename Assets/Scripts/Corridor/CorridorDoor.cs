@@ -35,13 +35,17 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     private ExitSequence exitSequence;
 
     private CharacterController characterController;
+    private PlayerFootsteps footsteps;
     private bool inTransition;
     private bool pendingClear;
 
     private void Start()
     {
         if (playerController != null)
+        {
             characterController = playerController.GetComponent<CharacterController>();
+            footsteps = playerController.GetComponent<PlayerFootsteps>();
+        }
     }
 
     public void Interact()
@@ -73,10 +77,17 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             return;
         }
 
+        // 전역 전환 락 — 다른 시퀀스(귀신/새 피격) 전환 진행 중이면 진입 차단(소프트락 방지).
+        // hint 게이트 통과 후, 상태 세팅/OnDoorUsed 전에 획득 → 실패 시 카운터 desync 없음.
+        if (!fadeController.TryLockTransition())
+            return;
+
         pendingClear = judgement != null && judgement.WouldClearOnDoorUse(direction);
         inTransition = true;
         OnDoorUsed?.Invoke(direction);
         playerController.enabled = false;
+        if (footsteps != null)
+            footsteps.enabled = false;
 
         fadeController.StartTransition(OnMidpoint, OnComplete);
     }
@@ -115,8 +126,12 @@ public class CorridorDoor : MonoBehaviour, IInteractable
         if (!pendingClear)
         {
             playerController.enabled = true;
+            if (footsteps != null)
+                footsteps.enabled = true;
+            fadeController.UnlockTransition();
             OnCorridorEntered?.Invoke();
         }
+        // pendingClear(클리어) 경로는 엔딩 종단 — 락 유지로 추가 전환 차단.
         inTransition = false;
     }
 }

@@ -12,13 +12,13 @@ public class AudioMixerLinker : MonoBehaviour
 
     [Header("Exposed Parameter Names")]
     [SerializeField]
-    private string masterParam = "Master";
+    private string masterParam = "MasterVolume";
 
     [SerializeField]
-    private string bgmParam = "Music";
+    private string bgmParam = "BgmVolume";
 
     [SerializeField]
-    private string sfxParam = "SFX";
+    private string sfxParam = "SfxVolume";
 
     private void Start()
     {
@@ -80,6 +80,11 @@ public class AudioMixerLinker : MonoBehaviour
             return;
         // linear 0~1 → dB. 0이면 -80dB(묵음).
         float db = linear <= 0f ? -80f : Mathf.Log10(linear) * 20f;
-        mixer.SetFloat(param, db);
+        // SetFloat은 unknown param에 조용히 false 반환 — param명 오타/오버라이드 누락 조기 검출.
+        if (!mixer.SetFloat(param, db))
+            Debug.LogWarning(
+                $"[AudioMixerLinker] '{param}' 파라미터가 믹서에 없습니다 — 볼륨 미반영.",
+                this
+            );
     }
 }
