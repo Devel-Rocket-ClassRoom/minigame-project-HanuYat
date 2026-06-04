@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
@@ -32,6 +33,12 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
+    // 트림 결과 캐시 — (source, startOffset, maxDuration) 키. 인스턴스/씬 재로드 간 재트림 방지.
+    private static readonly Dictionary<(int, float, float), AudioClip> trimCache = new();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetTrimCache() => trimCache.Clear();
+
     private bool isOn;
 
     // 첫 적용(Awake) 전까지 isOn 기본값과 무관하게 강제 적용 보장 — 멱등 가드가 초기화를 막지 않도록.
@@ -49,7 +56,7 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
             switchClip != null
             && (switchClipStartOffset > 0f || switchClipMaxDuration < switchClip.length)
         )
-            switchClip = TrimClip(switchClip, switchClipStartOffset, switchClipMaxDuration);
+            switchClip = GetTrimmed(switchClip, switchClipStartOffset, switchClipMaxDuration);
     }
 
     private void OnEnable()
@@ -83,6 +90,8 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
         foreach (Light l in roomLights)
         {
+            if (l == null)
+                continue;
             l.enabled = on;
             l.intensity = on ? lightIntensityOn : 0f;
         }
@@ -90,6 +99,8 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
         Color ledColor = on ? emissionOnColor : Color.black;
         foreach (Renderer r in ledRenderers)
         {
+            if (r == null)
+                continue;
             r.material.SetColor(EmissionColorId, ledColor);
             r.material.EnableKeyword("_EMISSION");
         }
@@ -97,6 +108,16 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
         isOn = on;
 
         LightStateChanged?.Invoke(on);
+    }
+
+    private static AudioClip GetTrimmed(AudioClip source, float startTime, float endTime)
+    {
+        var key = (source.GetInstanceID(), startTime, endTime);
+        if (trimCache.TryGetValue(key, out AudioClip cached) && cached != null)
+            return cached;
+        AudioClip clip = TrimClip(source, startTime, endTime);
+        trimCache[key] = clip;
+        return clip;
     }
 
     private static AudioClip TrimClip(AudioClip source, float startTime, float endTime)

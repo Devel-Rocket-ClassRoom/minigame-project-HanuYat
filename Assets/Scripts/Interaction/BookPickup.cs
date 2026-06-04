@@ -9,6 +9,14 @@ public class BookPickup : MonoBehaviour, IInteractable, IResettable
     public static event Action OnCollected;
     public static event Action OnReset;
 
+    // Domain Reload OFF 환경 대비 — 정적 이벤트 잔존 구독 초기화.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticEvents()
+    {
+        OnCollected = null;
+        OnReset = null;
+    }
+
     [SerializeField]
     private Renderer bookRenderer;
 

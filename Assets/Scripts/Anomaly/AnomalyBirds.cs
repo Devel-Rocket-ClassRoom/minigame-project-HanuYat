@@ -32,6 +32,10 @@ public class AnomalyBirds : AnomalyEffectBase
 
     public static void RaisePlayerAttacked() => OnPlayerAttacked?.Invoke();
 
+    // Domain Reload OFF 환경 대비 — 정적 이벤트 잔존 구독 초기화.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticEvents() => OnPlayerAttacked = null;
+
     public bool IsArmed { get; private set; }
 
     private Coroutine cawRoutine;

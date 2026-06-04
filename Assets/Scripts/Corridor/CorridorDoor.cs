@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CorridorDoor : MonoBehaviour, IInteractable
@@ -12,6 +13,18 @@ public class CorridorDoor : MonoBehaviour, IInteractable
 
     public static event Action<DoorDirection> OnDoorUsed;
     public static event Action OnCorridorEntered;
+
+    // 트림 결과 캐시 — (source, maxDuration) 키. 두 문이 같은 lockedClip 공유 / 씬 재로드 시 재트림 방지.
+    private static readonly Dictionary<(int, float), AudioClip> trimCache = new();
+
+    // Domain Reload OFF 환경 대비 — 정적 이벤트 잔존 구독 + 트림 캐시 초기화.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        OnDoorUsed = null;
+        OnCorridorEntered = null;
+        trimCache.Clear();
+    }
 
     public static void RaiseDoorUsed(DoorDirection direction) => OnDoorUsed?.Invoke(direction);
 
@@ -74,7 +87,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             && lockedClipMaxDuration > 0f
             && lockedClipMaxDuration < lockedClip.length
         )
-            lockedClip = TrimClip(lockedClip, lockedClipMaxDuration);
+            lockedClip = GetTrimmed(lockedClip, lockedClipMaxDuration);
     }
 
     public void Interact()
@@ -187,6 +200,16 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     {
         if (audioSource != null && clip != null)
             audioSource.PlayOneShot(clip);
+    }
+
+    private static AudioClip GetTrimmed(AudioClip source, float duration)
+    {
+        var key = (source.GetInstanceID(), duration);
+        if (trimCache.TryGetValue(key, out AudioClip cached) && cached != null)
+            return cached;
+        AudioClip clip = TrimClip(source, duration);
+        trimCache[key] = clip;
+        return clip;
     }
 
     private static AudioClip TrimClip(AudioClip source, float duration)
