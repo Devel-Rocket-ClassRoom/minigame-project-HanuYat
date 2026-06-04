@@ -23,6 +23,13 @@ public class BookPickup : MonoBehaviour, IInteractable, IResettable
     [SerializeField]
     private ClassroomLightSwitch lightSwitch;
 
+    [Header("SFX (선택)")]
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip pickupClip;
+
     private bool collected;
 
     private void Awake()
@@ -54,6 +61,9 @@ public class BookPickup : MonoBehaviour, IInteractable, IResettable
             HintMessage.Instance?.ShowDark();
             return;
         }
+
+        if (audioSource != null && pickupClip != null)
+            audioSource.PlayOneShot(pickupClip);
 
         SetCollected(true);
         OnCollected?.Invoke();

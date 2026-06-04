@@ -1969,6 +1969,10 @@ PrefabInstance:
       value: "\uB2EB\uAE30"
       objectReference: {fileID: 0}
     - target: {fileID: 9002809172488232936, guid: fca644ef066da26489ee7adffb3732d9, type: 3}
+      propertyPath: clickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 71106f378358bf34dbb3ed2adf2faa6b, type: 3}
+    - target: {fileID: 9002809172488232936, guid: fca644ef066da26489ee7adffb3732d9, type: 3}
       propertyPath: soundSource
       value: 
       objectReference: {fileID: 2924637}
@@ -2660,6 +2664,10 @@ PrefabInstance:
       propertyPath: buttonText
       value: start
       objectReference: {fileID: 0}
+    - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
+      propertyPath: clickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 71106f378358bf34dbb3ed2adf2faa6b, type: 3}
     - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
       propertyPath: soundSource
       value: 
@@ -3992,6 +4000,10 @@ PrefabInstance:
       value: exit
       objectReference: {fileID: 0}
     - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
+      propertyPath: clickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 71106f378358bf34dbb3ed2adf2faa6b, type: 3}
+    - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
       propertyPath: soundSource
       value: 
       objectReference: {fileID: 2924637}
@@ -4340,6 +4352,10 @@ PrefabInstance:
       propertyPath: buttonText
       value: settings
       objectReference: {fileID: 0}
+    - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
+      propertyPath: clickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 71106f378358bf34dbb3ed2adf2faa6b, type: 3}
     - target: {fileID: 8314491805865168202, guid: bc83308b2b910e54999e3ddd280ec778, type: 3}
       propertyPath: soundSource
       value: 

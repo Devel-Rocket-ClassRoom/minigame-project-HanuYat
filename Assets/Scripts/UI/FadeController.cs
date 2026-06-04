@@ -65,11 +65,19 @@ public class FadeController : MonoBehaviour
         transitionCoroutine = null;
     }
 
-    public void StartTransition(Action onMidpoint, Action onComplete = null)
+    public float FadeDuration => fadeDuration;
+
+    // holdOverride < 0 이면 Inspector midpointHold 사용.
+    public void StartTransition(
+        Action onMidpoint,
+        Action onComplete = null,
+        float holdOverride = -1f
+    )
     {
+        float hold = holdOverride >= 0f ? holdOverride : midpointHold;
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
-        transitionCoroutine = StartCoroutine(TransitionRoutine(onMidpoint, onComplete));
+        transitionCoroutine = StartCoroutine(TransitionRoutine(onMidpoint, onComplete, hold));
     }
 
     // 페이드 아웃(0→1)만 하고 검은 화면 유지 — 인터스티셜(스토리 창)용.
@@ -89,13 +97,14 @@ public class FadeController : MonoBehaviour
         onComplete?.Invoke();
     }
 
-    private IEnumerator TransitionRoutine(Action onMidpoint, Action onComplete)
+    private IEnumerator TransitionRoutine(Action onMidpoint, Action onComplete, float hold)
     {
         yield return Fade(0f, 1f);
-        onMidpoint?.Invoke();
 
-        if (midpointHold > 0f)
-            yield return new WaitForSecondsRealtime(midpointHold);
+        if (hold > 0f)
+            yield return new WaitForSecondsRealtime(hold);
+
+        onMidpoint?.Invoke();
 
         yield return Fade(1f, 0f);
 
