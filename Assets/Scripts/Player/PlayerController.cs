@@ -237,11 +237,16 @@ public class PlayerController : MonoBehaviour
 
     private bool CanStand()
     {
+        // 세울 머리 끝(standHeight) 바로 아래 작은 probe. 반경을 캡슐 반경의 절반으로 좁히고
+        // probe 상단이 standHeight에 닿도록 center를 올려, 머리 높이 천장은 그대로 검출하되
+        // 옆 벽은 오검출하지 않는다 — 벽은 항상 캡슐 반경 이상 떨어져 있어(침투 방지) 좁은 probe엔 안 닿음.
+        // (PR#49: self 필터는 유지)
         float radius = controller.radius;
-        Vector3 checkCenter = transform.position + Vector3.up * (standHeight - radius);
+        float probeRadius = radius * 0.5f;
+        Vector3 checkCenter = transform.position + Vector3.up * (standHeight - probeRadius);
         Collider[] hits = Physics.OverlapSphere(
             checkCenter,
-            radius,
+            probeRadius,
             ~0,
             QueryTriggerInteraction.Ignore
         );
