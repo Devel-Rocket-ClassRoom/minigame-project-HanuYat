@@ -17,6 +17,19 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
     [SerializeField]
     private bool startOn = true;
 
+    [Header("SFX (선택)")]
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip switchClip;
+
+    [SerializeField]
+    private float switchClipStartOffset = 0f;
+
+    [SerializeField]
+    private float switchClipMaxDuration = 1f;
+
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     private bool isOn;
@@ -31,6 +44,12 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
     private void Awake()
     {
         ApplyState(startOn);
+
+        if (
+            switchClip != null
+            && (switchClipStartOffset > 0f || switchClipMaxDuration < switchClip.length)
+        )
+            switchClip = TrimClip(switchClip, switchClipStartOffset, switchClipMaxDuration);
     }
 
     private void OnEnable()
@@ -45,6 +64,8 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
 
     public void Interact()
     {
+        if (audioSource != null && switchClip != null)
+            audioSource.PlayOneShot(switchClip);
         ApplyState(!isOn);
     }
 
@@ -76,5 +97,25 @@ public class ClassroomLightSwitch : MonoBehaviour, IInteractable, IResettable
         isOn = on;
 
         LightStateChanged?.Invoke(on);
+    }
+
+    private static AudioClip TrimClip(AudioClip source, float startTime, float endTime)
+    {
+        int startSample = Mathf.Clamp((int)(startTime * source.frequency), 0, source.samples);
+        int endSample = Mathf.Clamp((int)(endTime * source.frequency), startSample, source.samples);
+        int samples = endSample - startSample;
+        float[] data = new float[source.samples * source.channels];
+        source.GetData(data, 0);
+        float[] trimmed = new float[samples * source.channels];
+        System.Array.Copy(data, startSample * source.channels, trimmed, 0, trimmed.Length);
+        AudioClip clip = AudioClip.Create(
+            source.name + "_trim",
+            samples,
+            source.channels,
+            source.frequency,
+            false
+        );
+        clip.SetData(trimmed, 0);
+        return clip;
     }
 }

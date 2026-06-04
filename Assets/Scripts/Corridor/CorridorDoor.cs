@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class CorridorDoor : MonoBehaviour, IInteractable
@@ -34,6 +35,27 @@ public class CorridorDoor : MonoBehaviour, IInteractable
     [SerializeField]
     private ExitSequence exitSequence;
 
+    [Header("SFX (선택)")]
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip openClip;
+
+    [SerializeField]
+    private AudioClip closeClip;
+
+    [SerializeField]
+    private AudioClip lockedClip;
+
+    // -1이면 전체 클립 사용. 양수면 해당 초까지만 잘라서 런타임 AudioClip 생성.
+    [SerializeField]
+    private float lockedClipMaxDuration = 0.5f;
+
+    // 페이드인을 사운드 종료 기준보다 얼마나 앞당길지(초). 문마다 개별 조정.
+    [SerializeField]
+    private float fadeInAdvance = 0.3f;
+
     private CharacterController characterController;
     private PlayerFootsteps footsteps;
     private bool inTransition;
@@ -46,6 +68,13 @@ public class CorridorDoor : MonoBehaviour, IInteractable
             characterController = playerController.GetComponent<CharacterController>();
             footsteps = playerController.GetComponent<PlayerFootsteps>();
         }
+
+        if (
+            lockedClip != null
+            && lockedClipMaxDuration > 0f
+            && lockedClipMaxDuration < lockedClip.length
+        )
+            lockedClip = TrimClip(lockedClip, lockedClipMaxDuration);
     }
 
     public void Interact()
@@ -65,6 +94,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
         // 책 게이트보다 먼저 → 후진 문은 책 회수 여부와 무관하게 항상 안내.
         if (direction == DoorDirection.Backward && judgement != null && judgement.IsFirstTurn)
         {
+            PlaySfxOneShot(lockedClip);
             HintMessage.Instance?.ShowEntrance();
             return;
         }
@@ -73,6 +103,7 @@ public class CorridorDoor : MonoBehaviour, IInteractable
         // inTransition/OnDoorUsed/pendingClear 세팅 전에 return → JudgementSystem 카운터 desync 없음.
         if (TurnObjective.Instance != null && !TurnObjective.Instance.IsBookCollected)
         {
+            PlaySfxOneShot(lockedClip);
             HintMessage.Instance?.ShowLocked();
             return;
         }
@@ -89,7 +120,17 @@ public class CorridorDoor : MonoBehaviour, IInteractable
         if (footsteps != null)
             footsteps.enabled = false;
 
-        fadeController.StartTransition(OnMidpoint, OnComplete);
+        float openLen = openClip != null ? openClip.length : 0f;
+        float closeLen = closeClip != null ? closeClip.length : 0f;
+        float holdNeeded =
+            audioSource != null
+                ? Mathf.Max(0.1f, openLen + closeLen - fadeController.FadeDuration - fadeInAdvance)
+                : -1f;
+
+        if (audioSource != null && (openClip != null || closeClip != null))
+            StartCoroutine(DoorSfxSequence(openLen));
+
+        fadeController.StartTransition(OnMidpoint, OnComplete, holdNeeded);
     }
 
     private void OnMidpoint()
@@ -133,5 +174,36 @@ public class CorridorDoor : MonoBehaviour, IInteractable
         }
         // pendingClear(클리어) 경로는 엔딩 종단 — 락 유지로 추가 전환 차단.
         inTransition = false;
+    }
+
+    private IEnumerator DoorSfxSequence(float openLen)
+    {
+        PlaySfxOneShot(openClip);
+        yield return new WaitForSeconds(openLen);
+        PlaySfxOneShot(closeClip);
+    }
+
+    private void PlaySfxOneShot(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+            audioSource.PlayOneShot(clip);
+    }
+
+    private static AudioClip TrimClip(AudioClip source, float duration)
+    {
+        int samples = Mathf.Min((int)(duration * source.frequency), source.samples);
+        float[] data = new float[source.samples * source.channels];
+        source.GetData(data, 0);
+        float[] trimmed = new float[samples * source.channels];
+        System.Array.Copy(data, 0, trimmed, 0, trimmed.Length);
+        AudioClip clip = AudioClip.Create(
+            source.name + "_trim",
+            samples,
+            source.channels,
+            source.frequency,
+            false
+        );
+        clip.SetData(trimmed, 0);
+        return clip;
     }
 }

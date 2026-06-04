@@ -19,6 +19,14 @@ public class PauseController : MonoBehaviour
     [SerializeField]
     private string mainMenuSceneName = "MainMenu Scene";
 
+    [Header("SFX (선택)")]
+    // ESC 토글음 전용. 패널 버튼 클릭음은 ButtonManager가 별도 처리(중복 방지 위해 버튼 Resume엔 미적용).
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip toggleClip;
+
     private bool isPaused;
     private bool isReturningToMenu;
 
@@ -61,6 +69,10 @@ public class PauseController : MonoBehaviour
 
     private void TogglePause()
     {
+        // ESC 경로 전용 토글음 — 버튼 클릭 Resume은 ButtonManager가 따로 울려 중복 방지.
+        if (audioSource != null && toggleClip != null)
+            audioSource.PlayOneShot(toggleClip);
+
         if (isPaused)
             Resume();
         else
