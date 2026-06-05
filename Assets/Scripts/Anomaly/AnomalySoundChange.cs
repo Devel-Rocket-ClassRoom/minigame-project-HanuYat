@@ -36,7 +36,7 @@ public class AnomalySoundChange : AnomalyEffectBase
 
     public override void Activate()
     {
-        if (!ready)
+        if (!ready || ambientSource == null)
             return;
 
         // 클립 교체만으론 재생 중인 소스가 안 바뀜 — Play() 재호출 필요.
@@ -48,7 +48,7 @@ public class AnomalySoundChange : AnomalyEffectBase
 
     public override void Deactivate()
     {
-        if (!ready || !swapped)
+        if (!ready || !swapped || ambientSource == null)
             return;
 
         ambientSource.clip = originalClip;
