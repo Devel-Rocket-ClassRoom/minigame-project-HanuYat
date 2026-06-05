@@ -18,6 +18,28 @@ public class BirdDiver : MonoBehaviour
 
     private bool isDiving;
 
+    private Vector3 homePosition;
+    private Quaternion homeRotation;
+    private bool homeCached;
+
+    // 다이브는 LaunchDive 이후에만 발생 → Awake(혹은 첫 활성) 시점은 항상 홈 위치. 1회만 캐시.
+    private void Awake()
+    {
+        homePosition = transform.position;
+        homeRotation = transform.rotation;
+        homeCached = true;
+    }
+
+    // 활성화될 때마다 홈 복귀 + 상태 초기화 — 직전 다이브 끝 위치/잔여 isDiving/코루틴 잔존 방지.
+    // (OnEnable은 Awake 직후 보장 → homeCached. 이 시점엔 LaunchDive 전이라 다이브 코루틴 없음.)
+    private void OnEnable()
+    {
+        StopAllCoroutines();
+        isDiving = false;
+        if (homeCached)
+            transform.SetPositionAndRotation(homePosition, homeRotation);
+    }
+
     public void LaunchDive(Vector3 playerPos)
     {
         // 재진입 방어: 이전 다이브/비활성화 코루틴 잔여 정리 후 시작 (중복 DiveRoutine 방지).

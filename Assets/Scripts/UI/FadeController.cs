@@ -104,12 +104,29 @@ public class FadeController : MonoBehaviour
         if (hold > 0f)
             yield return new WaitForSecondsRealtime(hold);
 
-        onMidpoint?.Invoke();
+        // 콜백 throw가 코루틴을 죽여 화면 BLACK 고착 + 전환 락 영구잠김(전역 soft-lock) 되는 것 방지.
+        // yield가 있어 try/finally로 전체를 감쌀 수 없으므로 동기 Invoke만 개별 보호.
+        try
+        {
+            onMidpoint?.Invoke();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+        }
 
         yield return Fade(1f, 0f);
 
         transitionCoroutine = null;
-        onComplete?.Invoke();
+
+        try
+        {
+            onComplete?.Invoke();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     private IEnumerator Fade(float from, float to)

@@ -21,7 +21,18 @@ public static class ResettableRegistry
     {
         resetBuffer.Clear();
         resetBuffer.AddRange(items);
+        // 한 항목의 ResetToDefault throw가 나머지 리셋을 중단시키고 호출자(FadeController
+        // OnMidpoint)로 전파돼 전역 soft-lock 되는 것 방지 — 항목별 격리.
         foreach (IResettable r in resetBuffer)
-            r.ResetToDefault();
+        {
+            try
+            {
+                r.ResetToDefault();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
     }
 }
