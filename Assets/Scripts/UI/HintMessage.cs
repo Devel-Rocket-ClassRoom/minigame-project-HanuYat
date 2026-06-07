@@ -20,6 +20,10 @@ public class HintMessage : MonoBehaviour
     [SerializeField]
     private ModalWindowManager pickupModal;
 
+    // 물 이상현상 경고 — 배경 없이 작게. "갑자기 물이..? 빨리 책을 가져가야겠다".
+    [SerializeField]
+    private ModalWindowManager waterModal;
+
     // 게임 시작 동기 자막 — 책을 학교에 두고 온 상황 전달, 1회.
     [SerializeField]
     private ModalWindowManager introModal;
@@ -52,6 +56,9 @@ public class HintMessage : MonoBehaviour
 
     [SerializeField]
     private float pickupDuration;
+
+    [SerializeField]
+    private float waterDuration;
 
     [SerializeField]
     private float introDuration;
@@ -139,6 +146,12 @@ public class HintMessage : MonoBehaviour
     public void ShowPickup()
     {
         ShowModal(pickupModal, Dur(pickupDuration), null);
+    }
+
+    // 물 이상현상 경고 — 중앙·작게 → 방울.
+    public void ShowWater()
+    {
+        ShowModal(waterModal, Dur(waterDuration), bellClip);
     }
 
     // 게임 시작 동기 자막 (1회) — 중앙 모달 → 방울.

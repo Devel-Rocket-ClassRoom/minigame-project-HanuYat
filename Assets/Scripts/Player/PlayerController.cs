@@ -66,8 +66,12 @@ public class PlayerController : MonoBehaviour
     private float cameraStandLocalY;
     private float initialCenterY;
     private float initialHeight;
+    private float speedMultiplier = 1f;
 
     public bool IsCrouching => isCrouching;
+
+    // 외부(예: 물 이상현상)에서 이동속도 배율 제어. 1 = 정상.
+    public void SetSpeedMultiplier(float value) => speedMultiplier = Mathf.Max(0f, value);
 
     private void Awake()
     {
@@ -184,9 +188,11 @@ public class PlayerController : MonoBehaviour
         Vector2 move = moveAction.action.ReadValue<Vector2>();
         Vector3 horizontal = transform.right * move.x + transform.forward * move.y;
         float speed =
-            isCrouching ? crouchSpeed
-            : sprintAction.action.IsPressed() ? sprintSpeed
-            : walkSpeed;
+            (
+                isCrouching ? crouchSpeed
+                : sprintAction.action.IsPressed() ? sprintSpeed
+                : walkSpeed
+            ) * speedMultiplier;
 
         if (controller.isGrounded && verticalVelocity.y < 0f)
         {

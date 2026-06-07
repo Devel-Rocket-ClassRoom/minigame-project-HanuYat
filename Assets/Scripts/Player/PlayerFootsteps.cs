@@ -15,6 +15,16 @@ public class PlayerFootsteps : MonoBehaviour
     [SerializeField]
     private AudioClip[] runClips;
 
+    [Header("Water Clips (물 이상현상 발동 시 전환)")]
+    [SerializeField]
+    private AudioClip[] waterWalkClips;
+
+    [SerializeField]
+    private AudioClip[] waterRunClips;
+
+    // 물 이상현상 동안 true — 발자국 풀을 Water로 전환.
+    private bool waterMode;
+
     [Header("Cadence (거리 누적 — 빠를수록 잦게)")]
     // 걷기: 이 거리(m)마다 1보.
     [SerializeField]
@@ -108,8 +118,9 @@ public class PlayerFootsteps : MonoBehaviour
             return;
         lastStepTime = Time.time;
 
-        AudioClip[] pool =
-            running && runClips != null && runClips.Length > 0 ? runClips : walkClips;
+        AudioClip[] runPool = waterMode ? waterRunClips : runClips;
+        AudioClip[] walkPool = waterMode ? waterWalkClips : walkClips;
+        AudioClip[] pool = running && runPool != null && runPool.Length > 0 ? runPool : walkPool;
         if (audioSource == null || pool == null || pool.Length == 0)
             return;
 
@@ -122,6 +133,15 @@ public class PlayerFootsteps : MonoBehaviour
 
         audioSource.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
         audioSource.PlayOneShot(clip, volume);
+    }
+
+    // 물 이상현상 발동/해제 시 발자국 풀 전환. lastIndex 리셋 — 풀 길이 다를 수 있어 인덱스 무효화.
+    public void SetWaterMode(bool value)
+    {
+        if (waterMode == value)
+            return;
+        waterMode = value;
+        lastIndex = -1;
     }
 
     // 직전 클립과 다른 인덱스 — 동일 발소리 연속 방지.
