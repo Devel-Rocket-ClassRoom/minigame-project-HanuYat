@@ -36,6 +36,14 @@ public class HintMessage : MonoBehaviour
     [SerializeField]
     private ModalWindowManager classroomModal;
 
+    // A13 새 떼 출현 — "왠 새 소리가..?". 중앙·작게.
+    [SerializeField]
+    private ModalWindowManager birdsSoundModal;
+
+    // A13 교실 진입 — "천장에 새들이 바글바글... 숙여서 지나가야겠다". 하단 배경 모달.
+    [SerializeField]
+    private ModalWindowManager birdsCrouchModal;
+
     // 첫 루프백 — "분명 나갔는데" → "왼쪽 벽에 종이가" 순차 표시.
     [SerializeField]
     private ModalWindowManager weirdModal;
@@ -70,6 +78,12 @@ public class HintMessage : MonoBehaviour
     private float classroomDuration;
 
     [SerializeField]
+    private float birdsSoundDuration;
+
+    [SerializeField]
+    private float birdsCrouchDuration;
+
+    [SerializeField]
     private float weirdDuration;
 
     [SerializeField]
@@ -95,6 +109,17 @@ public class HintMessage : MonoBehaviour
     private Coroutine hideCoroutine;
     private Coroutine sequenceCoroutine;
     private ModalWindowManager active;
+
+    // 현재 떠 있는 모달이 anomaly 힌트(Activate 시 자동 발생)인지 + 그 표시 파라미터.
+    // 루프백(Weird→Paper)과 겹치면 anomaly 힌트를 보류했다가 시퀀스 종료 후 다시 띄우기 위함.
+    private bool activeIsAnomalyHint;
+    private float activeDuration;
+    private AudioClip activeClip;
+
+    // 루프백 종료 후 표시할 보류된 anomaly 힌트.
+    private ModalWindowManager deferredAnomalyModal;
+    private float deferredDuration;
+    private AudioClip deferredClip;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticState()
@@ -151,7 +176,7 @@ public class HintMessage : MonoBehaviour
     // 물 이상현상 경고 — 중앙·작게 → 방울.
     public void ShowWater()
     {
-        ShowModal(waterModal, Dur(waterDuration), bellClip);
+        ShowModal(waterModal, Dur(waterDuration), bellClip, true);
     }
 
     // 게임 시작 동기 자막 (1회) — 중앙 모달 → 방울.
@@ -172,9 +197,32 @@ public class HintMessage : MonoBehaviour
         ShowModal(classroomModal, Dur(classroomDuration), paperClip);
     }
 
+    // A13 새 떼 출현 경고 — 중앙·작게 → 방울.
+    public void ShowBirdsSound()
+    {
+        ShowModal(birdsSoundModal, Dur(birdsSoundDuration), bellClip, true);
+    }
+
+    // A13 교실 진입 crouch 안내 — 하단 배경 모달 → 종이.
+    public void ShowBirdsCrouch()
+    {
+        ShowModal(birdsCrouchModal, Dur(birdsCrouchDuration), paperClip);
+    }
+
     // 첫 루프백 — Weird → Paper 순차 표시 (왼쪽 벽 종이로 유도)
     public void ShowLoopbackSequence()
     {
+        // anomaly 힌트가 이미 떠 있으면(midpoint에서 먼저 발생) 보류 → 닫고 루프백 후 재표시.
+        if (active != null && activeIsAnomalyHint)
+        {
+            deferredAnomalyModal = active;
+            deferredDuration = activeDuration;
+            deferredClip = activeClip;
+            CloseModal(active);
+            active = null;
+            activeIsAnomalyHint = false;
+        }
+
         if (hideCoroutine != null)
             StopCoroutine(hideCoroutine);
         if (sequenceCoroutine != null)
@@ -189,6 +237,17 @@ public class HintMessage : MonoBehaviour
         yield return new WaitForSecondsRealtime(sequenceGap);
         yield return ShowAndHold(paperModal, Dur(paperDuration), bellClip);
         sequenceCoroutine = null;
+
+        // 루프백과 겹쳐 보류했던 anomaly 힌트를 이제 표시.
+        if (deferredAnomalyModal != null)
+        {
+            yield return new WaitForSecondsRealtime(sequenceGap);
+            ModalWindowManager m = deferredAnomalyModal;
+            float d = deferredDuration;
+            AudioClip c = deferredClip;
+            deferredAnomalyModal = null;
+            ShowModal(m, d, c, true);
+        }
     }
 
     private IEnumerator ShowAndHold(ModalWindowManager modal, float duration, AudioClip clip)
@@ -196,6 +255,7 @@ public class HintMessage : MonoBehaviour
         if (modal == null)
             yield break;
         active = modal;
+        activeIsAnomalyHint = false;
         PlayClip(clip);
         modal.ModalWindowIn();
         yield return new WaitForSecondsRealtime(duration);
@@ -210,10 +270,25 @@ public class HintMessage : MonoBehaviour
             audioSource.PlayOneShot(clip);
     }
 
-    private void ShowModal(ModalWindowManager modal, float duration, AudioClip clip)
+    private void ShowModal(
+        ModalWindowManager modal,
+        float duration,
+        AudioClip clip,
+        bool isAnomalyHint = false
+    )
     {
         if (modal == null)
             return;
+
+        // anomaly 힌트는 루프백(weird→paper) 진행 중이면 시퀀스를 죽이지 않고 보류 →
+        // 시퀀스 종료 후 LoopbackRoutine 말미에서 표시. (Weird/Paper 우선)
+        if (isAnomalyHint && sequenceCoroutine != null)
+        {
+            deferredAnomalyModal = modal;
+            deferredDuration = duration;
+            deferredClip = clip;
+            return;
+        }
 
         PlayClip(clip);
 
@@ -229,6 +304,9 @@ public class HintMessage : MonoBehaviour
             CloseModal(active);
 
         active = modal;
+        activeIsAnomalyHint = isAnomalyHint;
+        activeDuration = duration;
+        activeClip = clip;
         modal.ModalWindowIn();
 
         if (hideCoroutine != null)
@@ -241,7 +319,10 @@ public class HintMessage : MonoBehaviour
         yield return new WaitForSecondsRealtime(duration);
         CloseModal(modal);
         if (active == modal)
+        {
             active = null;
+            activeIsAnomalyHint = false;
+        }
         hideCoroutine = null;
     }
 }

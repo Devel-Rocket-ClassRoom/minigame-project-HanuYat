@@ -40,6 +40,9 @@ public class AnomalyBirds : AnomalyEffectBase
 
     private Coroutine cawRoutine;
 
+    // crouch 힌트는 이번 활성화당 1회만 — 앞/뒤 교실문 둘 다 열어도 중복 안 뜨도록.
+    private bool crouchHintShown;
+
     private void Awake()
     {
         if (birdRoots == null)
@@ -56,6 +59,11 @@ public class AnomalyBirds : AnomalyEffectBase
     public override void Activate()
     {
         IsArmed = true;
+        crouchHintShown = false;
+
+        // 출현 즉시 "왠 새 소리가..?" 힌트 — 교실 진입 전 경계 유도.
+        HintMessage.Instance?.ShowBirdsSound();
+
         foreach (var root in birdRoots)
             if (root != null)
                 root.SetActive(true);
@@ -96,6 +104,15 @@ public class AnomalyBirds : AnomalyEffectBase
                 root.SetActive(false);
         if (birdDiver != null)
             birdDiver.gameObject.SetActive(false);
+    }
+
+    // 교실문 오픈 시 호출 — armed 상태에서만, 활성화당 1회 crouch 안내 힌트.
+    public void TryShowCrouchHint()
+    {
+        if (!IsArmed || crouchHintShown)
+            return;
+        crouchHintShown = true;
+        HintMessage.Instance?.ShowBirdsCrouch();
     }
 
     private IEnumerator CawRoutine()
