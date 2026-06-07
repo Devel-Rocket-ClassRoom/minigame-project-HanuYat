@@ -18,6 +18,11 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
     [SerializeField]
     private bool showClassroomHintOnFirstOpen = false;
 
+    // 교실 문일 경우: 연결 시 A13(새 떼) armed 상태에서 오픈할 때마다 crouch 안내 힌트.
+    // 비워두면 비활성. 활성화당 1회 표시 가드는 AnomalyBirds가 관리.
+    [SerializeField]
+    private AnomalyBirds anomalyBirds;
+
     [Header("SFX (선택)")]
     // 문 위치에서 재생할 3D AudioSource (SFX 믹서 그룹 라우팅). 비우면 무음.
     [SerializeField]
@@ -69,6 +74,10 @@ public class SlidingDoor : MonoBehaviour, IInteractable, IResettable
             classroomHintShown = true;
             HintMessage.Instance?.ShowClassroom();
         }
+
+        // A13 새 떼 활성 중 교실문 오픈 → "천장에 새들이... 숙여서 지나가자" 힌트.
+        if (opening && anomalyBirds != null)
+            anomalyBirds.TryShowCrouchHint();
 
         // SFX는 플레이어 상호작용 시점에만. Slide/ResetToDefault에 두면
         // 복도 리셋(매 텔레포트)마다 닫힘음이 울린다.
