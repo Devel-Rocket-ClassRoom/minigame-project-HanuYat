@@ -38,7 +38,7 @@ public class AnomalyTransformChange : AnomalyEffectBase
             targets[i].localPosition = originalPositions[i] + positionOffset;
             targets[i].localRotation = originalRotations[i] * Quaternion.Euler(rotationOffset);
         }
-        Debug.Log("[Anomaly] A05 AnomalyTransformChange activated");
+        AnomalyLog.Activated("A05 AnomalyTransformChange");
     }
 
     public override void Deactivate()

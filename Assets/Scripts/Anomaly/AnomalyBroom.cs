@@ -28,7 +28,7 @@ public class AnomalyBroom : AnomalyEffectBase
     {
         if (broomSweep != null)
             broomSweep.SetSweeping(true);
-        Debug.Log("[Anomaly] A11 AnomalyBroom activated");
+        AnomalyLog.Activated("A11 AnomalyBroom");
     }
 
     public override void Deactivate()

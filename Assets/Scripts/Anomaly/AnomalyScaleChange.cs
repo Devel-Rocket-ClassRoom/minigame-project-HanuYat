@@ -40,7 +40,7 @@ public class AnomalyScaleChange : AnomalyEffectBase
         if (scaleCoroutine != null)
             StopCoroutine(scaleCoroutine);
         scaleCoroutine = StartCoroutine(ScaleTo(targetScales));
-        Debug.Log("[Anomaly] A06 AnomalyScaleChange activated");
+        AnomalyLog.Activated("A06 AnomalyScaleChange");
     }
 
     public override void Deactivate()

@@ -47,7 +47,7 @@ public class AnomalyMaterialSwap : AnomalyEffectBase
                 continue;
             targetRenderers[i].sharedMaterial = swapInstances[i];
         }
-        Debug.Log("[Anomaly] A08 AnomalyMaterialSwap activated");
+        AnomalyLog.Activated("A08 AnomalyMaterialSwap");
     }
 
     public override void Deactivate()

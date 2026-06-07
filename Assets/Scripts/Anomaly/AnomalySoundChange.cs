@@ -43,7 +43,7 @@ public class AnomalySoundChange : AnomalyEffectBase
         ambientSource.clip = anomalyClip;
         ambientSource.Play();
         swapped = true;
-        Debug.Log("[Anomaly] A07 AnomalySoundChange activated");
+        AnomalyLog.Activated("A07 AnomalySoundChange");
     }
 
     public override void Deactivate()

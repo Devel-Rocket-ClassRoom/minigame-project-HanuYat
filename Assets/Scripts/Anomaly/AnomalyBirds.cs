@@ -81,7 +81,7 @@ public class AnomalyBirds : AnomalyEffectBase
             StopCoroutine(cawRoutine);
         cawRoutine = StartCoroutine(CawRoutine());
 
-        Debug.Log("[Anomaly] A13 AnomalyBirds activated");
+        AnomalyLog.Activated("A13 AnomalyBirds");
     }
 
     public override void Deactivate()

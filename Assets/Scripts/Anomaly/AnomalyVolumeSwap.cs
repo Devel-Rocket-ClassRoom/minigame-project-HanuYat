@@ -76,7 +76,7 @@ public class AnomalyVolumeSwap : AnomalyEffectBase
         burstTimer = Random.Range(burstIntervalMin, burstIntervalMax);
         if (glitchVolume != null)
             glitchVolume.weight = 0f;
-        Debug.Log("[Anomaly] A10 AnomalyVolumeSwap activated");
+        AnomalyLog.Activated("A10 AnomalyVolumeSwap");
     }
 
     public override void Deactivate()
@@ -85,6 +85,14 @@ public class AnomalyVolumeSwap : AnomalyEffectBase
         if (targetVolume == null || originalProfile == null)
             return;
         targetVolume.sharedProfile = originalProfile;
+    }
+
+    private void OnDestroy()
+    {
+        // Awake에서 런타임 생성한 노이즈 텍스처 정리 — 씬 재로드 누수 방지.
+        // (AnomalyMaterialSwap이 swap 인스턴스를 Destroy하는 것과 동일한 대칭.)
+        if (noiseTex != null)
+            Destroy(noiseTex);
     }
 
     private void Update()
