@@ -115,7 +115,7 @@ public class AnomalyRisingWater : AnomalyEffectBase
 
         HintMessage.Instance?.ShowWater();
 
-        Debug.Log("[Anomaly] AnomalyRisingWater activated");
+        AnomalyLog.Activated("AnomalyRisingWater");
     }
 
     public override void Deactivate()

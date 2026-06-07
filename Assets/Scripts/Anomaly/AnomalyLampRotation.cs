@@ -28,7 +28,7 @@ public class AnomalyLampRotation : AnomalyEffectBase
                 continue;
             targets[i].localRotation = originalRotations[i] * Quaternion.Euler(0f, 0f, 90f);
         }
-        Debug.Log("[Anomaly] LampRotation activated");
+        AnomalyLog.Activated("LampRotation");
     }
 
     public override void Deactivate()

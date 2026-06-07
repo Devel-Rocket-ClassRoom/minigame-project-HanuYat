@@ -59,7 +59,7 @@ public class AnomalyColorChange : AnomalyEffectBase
         targetRenderer.GetPropertyBlock(mpb);
         mpb.SetColor(colorPropertyId, anomalyColor);
         targetRenderer.SetPropertyBlock(mpb);
-        Debug.Log("[Anomaly] A03 AnomalyColorChange activated");
+        AnomalyLog.Activated("A03 AnomalyColorChange");
     }
 
     public override void Deactivate()

@@ -18,7 +18,7 @@ public class AnomalyNPC : AnomalyEffectBase
     {
         if (npc != null)
             npc.SetActive(true);
-        Debug.Log("[Anomaly] A09 AnomalyNPC activated");
+        AnomalyLog.Activated("A09 AnomalyNPC");
     }
 
     public override void Deactivate()

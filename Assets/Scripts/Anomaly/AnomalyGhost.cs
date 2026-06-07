@@ -46,7 +46,7 @@ public class AnomalyGhost : AnomalyEffectBase
         if (chaser != null)
             chaser.SetArmed(true);
         UpdateVisibility();
-        Debug.Log("[Anomaly] A12 AnomalyGhost activated");
+        AnomalyLog.Activated("A12 AnomalyGhost");
     }
 
     public override void Deactivate()

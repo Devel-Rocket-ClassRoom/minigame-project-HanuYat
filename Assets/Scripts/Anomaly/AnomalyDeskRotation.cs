@@ -53,7 +53,7 @@ public class AnomalyDeskRotation : AnomalyEffectBase
         if (book != null && bookParentDesk != null)
             book.SetParent(originalBookParent, true);
 
-        Debug.Log("[Anomaly] DeskRotation activated");
+        AnomalyLog.Activated("DeskRotation");
     }
 
     public override void Deactivate()
