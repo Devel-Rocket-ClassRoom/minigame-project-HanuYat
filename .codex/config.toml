@@ -1,0 +1,17 @@
+# Codex CLI project config. Mirrors .claude/settings.json guardrails.
+# Codex has no per-glob write deny-list, so file protection = sandbox + approval + PreToolUse hook (.codex/hooks/guard-edits.ps1).
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
+
+[mcp_servers.UnityMCP]
+command = 'C:\Users\jnjn1\.local\bin\uvx.exe'
+args = [
+    "--offline",
+    "--from",
+    "mcpforunityserver==9.7.1",
+    "mcp-for-unity",
+]

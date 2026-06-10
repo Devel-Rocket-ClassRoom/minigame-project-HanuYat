@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File 'C:\\Users\\jnjn1\\repos\\minigame-project-HanuYat\\.codex\\hooks\\guard-edits.ps1'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File 'C:\\Users\\jnjn1\\repos\\minigame-project-HanuYat\\.codex\\hooks\\format-csharp.ps1'"
+          }
+        ]
+      }
+    ]
+  }
+}
