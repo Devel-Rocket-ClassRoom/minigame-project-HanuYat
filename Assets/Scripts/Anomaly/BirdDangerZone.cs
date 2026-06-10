@@ -38,6 +38,7 @@ public class BirdDangerZone : MonoBehaviour
             if (safeZone.ClosestPoint(playerPos) == playerPos)
                 return;
         }
-        AnomalyBirds.RaisePlayerAttacked();
+        // 풀 스폰된 다이브 새 인스턴스를 시퀀스로 전달 (사전배치 단일 참조 → 동적).
+        AnomalyBirds.RaisePlayerAttacked(anomalyBirds.ActiveDiver);
     }
 }

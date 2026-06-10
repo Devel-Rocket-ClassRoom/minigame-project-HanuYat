@@ -23,14 +23,25 @@ public class BirdWander : MonoBehaviour
 
     private Vector3 fallbackCenter;
 
-    private void Awake()
+    // 풀 스폰 시 AnomalyBirds가 주입하는 공유 배회 중심(월드). 모든 새가 같은 교실 박스를
+    // 돌도록 해 가장자리 새가 벽을 뚫지 않게 함. 미주입 시 wanderCenter→fallbackCenter 순.
+    private bool hasConfiguredCenter;
+    private Vector3 configuredCenter;
+
+    // 공유 배회 중심·범위 주입. StartWander 전에 호출.
+    public void Configure(Vector3 center, Vector3 halfExtents)
     {
-        fallbackCenter = transform.position;
+        configuredCenter = center;
+        wanderHalfExtents = halfExtents;
+        hasConfiguredCenter = true;
     }
 
     public void StartWander()
     {
         StopAllCoroutines();
+        // 풀 스폰 시 위치 확정 후 호출되므로 여기서 fallback 중심 갱신.
+        // (Configure/wanderCenter 미지정 시에만 이 스폰 지점 주변을 배회.)
+        fallbackCenter = transform.position;
         StartCoroutine(WanderRoutine());
     }
 
@@ -43,7 +54,9 @@ public class BirdWander : MonoBehaviour
     {
         while (true)
         {
-            Vector3 center = wanderCenter != null ? wanderCenter.position : fallbackCenter;
+            Vector3 center = hasConfiguredCenter
+                ? configuredCenter
+                : (wanderCenter != null ? wanderCenter.position : fallbackCenter);
             Vector3 target =
                 center
                 + new Vector3(

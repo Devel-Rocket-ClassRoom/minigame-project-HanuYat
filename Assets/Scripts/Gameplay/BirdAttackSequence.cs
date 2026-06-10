@@ -19,9 +19,6 @@ public class BirdAttackSequence : MonoBehaviour
     private Transform respawnPoint;
 
     [SerializeField]
-    private BirdDiver birdDiver;
-
-    [SerializeField]
     private float lookAtBirdSpeed = 6f;
 
     [SerializeField]
@@ -38,6 +35,9 @@ public class BirdAttackSequence : MonoBehaviour
     private Coroutine lookAtBirdCoroutine;
     private PlayerFootsteps footsteps;
 
+    // 풀에서 스폰돼 이번 공격에 돌진하는 다이브 새 — OnPlayerAttacked로 전달받음.
+    private BirdDiver activeDiver;
+
     private void OnEnable()
     {
         AnomalyBirds.OnPlayerAttacked += HandlePlayerInDanger;
@@ -50,7 +50,7 @@ public class BirdAttackSequence : MonoBehaviour
         BirdDiver.OnPlayerHit -= HandleBirdHit;
     }
 
-    private void HandlePlayerInDanger()
+    private void HandlePlayerInDanger(BirdDiver diver)
     {
         if (inTransition)
             return;
@@ -60,7 +60,9 @@ public class BirdAttackSequence : MonoBehaviour
             || playerCharacter == null
             || cameraTransform == null
             || respawnPoint == null
-            || birdDiver == null
+            || diver == null
+            // 비활성 다이버(직전 다이브로 SetActive(false)됨)면 LaunchDive의 StartCoroutine이 예외.
+            || !diver.gameObject.activeInHierarchy
         )
         {
             Debug.LogWarning(
@@ -69,6 +71,8 @@ public class BirdAttackSequence : MonoBehaviour
             );
             return;
         }
+
+        activeDiver = diver;
 
         // 전역 전환 락 — CorridorDoor/귀신 피격과 FadeController 공유 충돌 방지.
         if (!fadeController.TryLockTransition())
@@ -80,7 +84,7 @@ public class BirdAttackSequence : MonoBehaviour
         footsteps = playerController.GetComponent<PlayerFootsteps>();
         if (footsteps != null)
             footsteps.enabled = false;
-        birdDiver.LaunchDive(playerController.transform.position);
+        activeDiver.LaunchDive(playerController.transform.position);
         lookAtBirdCoroutine = StartCoroutine(LookAtBirdRoutine());
     }
 
@@ -98,9 +102,9 @@ public class BirdAttackSequence : MonoBehaviour
 
     private IEnumerator LookAtBirdRoutine()
     {
-        while (true)
+        while (activeDiver != null)
         {
-            Vector3 dir = birdDiver.transform.position - cameraTransform.position;
+            Vector3 dir = activeDiver.transform.position - cameraTransform.position;
             if (dir.sqrMagnitude > 0.001f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(dir.normalized, Vector3.up);
