@@ -18,26 +18,12 @@ public class BirdDiver : MonoBehaviour
 
     private bool isDiving;
 
-    private Vector3 homePosition;
-    private Quaternion homeRotation;
-    private bool homeCached;
-
-    // 다이브는 LaunchDive 이후에만 발생 → Awake(혹은 첫 활성) 시점은 항상 홈 위치. 1회만 캐시.
-    private void Awake()
-    {
-        homePosition = transform.position;
-        homeRotation = transform.rotation;
-        homeCached = true;
-    }
-
-    // 활성화될 때마다 홈 복귀 + 상태 초기화 — 직전 다이브 끝 위치/잔여 isDiving/코루틴 잔존 방지.
-    // (OnEnable은 Awake 직후 보장 → homeCached. 이 시점엔 LaunchDive 전이라 다이브 코루틴 없음.)
-    private void OnEnable()
+    // 풀 반납(SetActive(false)) 시 상태 초기화 — 잔여 isDiving/코루틴이 다음 대여로 새지 않도록.
+    // (위치는 AnomalyBirds.Spawn이 대여 직후 스폰 지점으로 설정하므로 여기선 손대지 않음.)
+    private void OnDisable()
     {
         StopAllCoroutines();
         isDiving = false;
-        if (homeCached)
-            transform.SetPositionAndRotation(homePosition, homeRotation);
     }
 
     public void LaunchDive(Vector3 playerPos)
