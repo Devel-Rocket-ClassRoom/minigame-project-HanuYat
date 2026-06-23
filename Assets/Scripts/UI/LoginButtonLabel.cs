@@ -35,7 +35,7 @@ public class LoginButtonLabel : MonoBehaviour
         if (label == null)
             return;
 
-        bool logged = AuthManager.Instance != null && AuthManager.Instance.IsLogedIn;
+        bool logged = AuthManager.Instance != null && AuthManager.Instance.IsLoggedIn;
 
         string display = null;
         if (AuthManager.Instance != null && !string.IsNullOrEmpty(AuthManager.Instance.DisplayName))

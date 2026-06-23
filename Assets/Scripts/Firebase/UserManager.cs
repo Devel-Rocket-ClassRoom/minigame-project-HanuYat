@@ -58,7 +58,7 @@ public class UserManager : MonoBehaviour
     // 닉네임 설정/변경 + users 등록 + 유니크 예약. 로그인 직후·닉 변경 공용.
     public async UniTask<(bool ok, string error)> SetNicknameAsync(string nickname)
     {
-        if (AuthManager.Instance == null || !AuthManager.Instance.IsLogedIn)
+        if (AuthManager.Instance == null || !AuthManager.Instance.IsLoggedIn)
             return (false, "로그인이 필요합니다.\nSign-in required.");
         if (usersRef == null || nicknamesRef == null)
             return (false, "DB 연결 안 됨\nDatabase unavailable");
@@ -125,22 +125,40 @@ public class UserManager : MonoBehaviour
             if (!reserved)
                 return (false, "이미 사용 중인 닉네임입니다.\nNickname already taken.");
 
-            var data = new Dictionary<string, object>
+            try
             {
-                { "nickname", nickname },
-                { "lastLogin", ServerValue.Timestamp },
-            };
-            if (isNew)
-                data["joinedAt"] = ServerValue.Timestamp;
-            await usersRef.Child(uid).UpdateChildrenAsync(data);
+                var data = new Dictionary<string, object>
+                {
+                    { "nickname", nickname },
+                    { "lastLogin", ServerValue.Timestamp },
+                };
+                if (isNew)
+                    data["joinedAt"] = ServerValue.Timestamp;
+                await usersRef.Child(uid).UpdateChildrenAsync(data);
 
-            // 이전 닉 키 해제.
-            if (!string.IsNullOrEmpty(prevKey))
-                await nicknamesRef.Child(prevKey).RemoveValueAsync();
+                // 이전 닉 키 해제.
+                if (!string.IsNullOrEmpty(prevKey))
+                    await nicknamesRef.Child(prevKey).RemoveValueAsync();
 
-            NicknameStore.Set(nickname);
-            await PropagateAsync(nickname);
-            return (true, null);
+                NicknameStore.Set(nickname);
+                await PropagateAsync(nickname);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                // 예약은 성공했는데 users 등록/후속이 실패한 경우 → 방금 예약한 새 키를 해제.
+                // 안 그러면 삭제될 익명 uid가 닉을 영구 점유(orphan 락)해 아무도 못 가져감.
+                try
+                {
+                    await nicknamesRef.Child(key).RemoveValueAsync();
+                }
+                catch
+                {
+                    /* 해제 실패는 무시 — best effort */
+                }
+                Debug.LogError($"[User] 닉네임 설정 실패(예약 롤백): {ex.Message}");
+                return (false, $"오류: {ex.Message}\nError: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
@@ -152,7 +170,7 @@ public class UserManager : MonoBehaviour
     // 서버 users/{uid}/nickname → 로컬 NicknameStore 복원 (다른 기기 이메일 로그인 후).
     public async UniTask LoadNicknameFromServerAsync()
     {
-        if (usersRef == null || AuthManager.Instance == null || !AuthManager.Instance.IsLogedIn)
+        if (usersRef == null || AuthManager.Instance == null || !AuthManager.Instance.IsLoggedIn)
             return;
         try
         {
@@ -172,7 +190,7 @@ public class UserManager : MonoBehaviour
     // 이메일을 users/{uid}/email에 동기화 (링크/이메일 로그인 후). 비번은 저장 안 함.
     public async UniTask SyncEmailAsync()
     {
-        if (usersRef == null || AuthManager.Instance == null || !AuthManager.Instance.IsLogedIn)
+        if (usersRef == null || AuthManager.Instance == null || !AuthManager.Instance.IsLoggedIn)
             return;
         string email = AuthManager.Instance.Email;
         if (string.IsNullOrEmpty(email))

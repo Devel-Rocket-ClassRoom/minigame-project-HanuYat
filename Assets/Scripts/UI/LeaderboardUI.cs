@@ -80,7 +80,7 @@ public class LeaderboardUI : MonoBehaviour
                 return;
             }
 
-            List<LeaderboardEntry> all = await LeaderboardManager.Instance.LoadLeaderboardAsync();
+            List<LeaderboardEntry> top = await LeaderboardManager.Instance.LoadTopAsync(100);
 
             // 로드 도중 패널이 닫혔으면 갱신 중단.
             if (!isActiveAndEnabled)
@@ -89,14 +89,16 @@ public class LeaderboardUI : MonoBehaviour
             string myUid =
                 AuthManager.Instance != null ? AuthManager.Instance.UserId : string.Empty;
 
-            DisplayList(all, myUid);
-            UpdateMyRecord(all, myUid);
+            DisplayList(top, myUid);
 
             if (statusText != null)
                 statusText.text =
-                    all.Count > 0
-                        ? $"총 {all.Count}명\n{all.Count} players"
+                    top.Count > 0
+                        ? $"상위 {top.Count}명\nTop {top.Count}"
                         : "아직 기록이 없습니다\nNo records yet";
+
+            // 내 기록/등수: 상위 목록에 있으면 인덱스로, 없으면 별도 조회.
+            await UpdateMyRecordAsync(top, myUid);
         }
         finally
         {
@@ -128,28 +130,41 @@ public class LeaderboardUI : MonoBehaviour
         }
     }
 
-    private void UpdateMyRecord(List<LeaderboardEntry> entries, string myUid)
+    private async UniTask UpdateMyRecordAsync(List<LeaderboardEntry> top, string myUid)
     {
         int myRank = -1;
         LeaderboardEntry mine = null;
 
         if (!string.IsNullOrEmpty(myUid))
         {
-            for (int i = 0; i < entries.Count; i++)
+            // 1) 상위 목록 안에 있으면 인덱스가 곧 등수 — 추가 조회 없음.
+            for (int i = 0; i < top.Count; i++)
             {
-                if (entries[i].userId == myUid)
+                if (top[i].userId == myUid)
                 {
                     myRank = i + 1;
-                    mine = entries[i];
+                    mine = top[i];
                     break;
                 }
             }
+
+            // 2) 상위 N 밖이면 내 단일 기록 + 전체 등수를 별도 조회.
+            if (mine == null && LeaderboardManager.Instance != null)
+            {
+                mine = await LeaderboardManager.Instance.GetMyEntryAsync();
+                if (mine != null)
+                    myRank = await LeaderboardManager.Instance.GetMyRankAsync(mine.timeMs);
+            }
         }
+
+        // 비동기 조회 도중 패널이 닫혔으면 UI 갱신 생략.
+        if (!isActiveAndEnabled)
+            return;
 
         if (mine != null)
         {
             if (myRankText != null)
-                myRankText.text = $"{myRank}";
+                myRankText.text = myRank > 0 ? $"{myRank}" : "-";
             if (myNicknameText != null)
                 myNicknameText.text = mine.nickname;
             if (myTimeText != null)
