@@ -40,6 +40,8 @@ publish/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
+# .pdb는 위에서 ignore → 짝 메타도 ignore (고아 메타 방지)
+/[Aa]ssets/**/*.pdb.meta
 
 # Build output
 *.apk
@@ -126,3 +128,18 @@ Assets/AI Toolkit.meta
 
 # AI Toolkit / external generation cache (루트)
 /GeneratedAssets/
+
+# === Firebase ===
+# 시크릿: google-services.json (API 키 포함) — 팀원/빌드머신에 따로 배포
+Assets/StreamingAssets/google-services.json
+Assets/StreamingAssets/google-services.json.meta
+Assets/StreamingAssets/google-services-desktop.json
+Assets/StreamingAssets/google-services-desktop.json.meta
+
+# 시크릿: FirebaseConfig 에셋 (apiKey 입력해둠) — 따로 배포
+# (apiKey 비우고 databaseUrl만 남기면 커밋해도 안전 — 코드는 databaseUrl만 읽음)
+Assets/Resources/FirebaseConfig.asset
+Assets/Resources/FirebaseConfig.asset.meta
+
+# Firebase Unity SDK 바이너리는 커밋함 (Windows 전용 → macOS .bundle / Linux .so / 모바일 제거).
+# 100MB 초과 파일 없음 → LFS 불필요.
