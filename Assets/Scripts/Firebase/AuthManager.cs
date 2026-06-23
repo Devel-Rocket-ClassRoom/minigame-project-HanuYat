@@ -12,10 +12,10 @@ public class AuthManager : MonoBehaviour
     private FirebaseUser currentUser;
 
     private bool isInitialized = false;
-    private bool lastNotifiedSingendIn = false;
+    private bool lastNotifiedSignedIn = false;
 
     public FirebaseUser CurrentUser => currentUser;
-    public bool IsLogedIn => currentUser != null;
+    public bool IsLoggedIn => currentUser != null;
     public string UserId => currentUser?.UserId ?? string.Empty;
     public bool IsInitialized => isInitialized;
 
@@ -95,16 +95,16 @@ public class AuthManager : MonoBehaviour
 
     private void NotifyLoginState()
     {
-        bool signedIn = IsLogedIn;
-        if (signedIn == lastNotifiedSingendIn)
+        bool signedIn = IsLoggedIn;
+        if (signedIn == lastNotifiedSignedIn)
             return;
 
-        lastNotifiedSingendIn = signedIn;
+        lastNotifiedSignedIn = signedIn;
         Debug.Log(signedIn ? $"[Auth] 로그인 상태: {UserId}" : "[Auth] 로그아웃 상태");
         LoginStateChanged?.Invoke(signedIn);
     }
 
-    public async UniTask<(bool success, string error)> SignInAnnonymouslyAsync()
+    public async UniTask<(bool success, string error)> SignInAnonymouslyAsync()
     {
         try
         {

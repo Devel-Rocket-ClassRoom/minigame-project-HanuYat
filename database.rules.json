@@ -1,0 +1,38 @@
+{
+  "rules": {
+    "leaderboard": {
+      ".read": true,
+      ".indexOn": ["timeMs"],
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['userId','nickname','timeMs','timestamp'])",
+        "userId":    { ".validate": "newData.val() === $uid" },
+        "nickname":  { ".validate": "newData.val() === root.child('users').child($uid).child('nickname').val()" },
+        "timeMs":    { ".validate": "newData.isNumber() && newData.val() >= 5000 && newData.val() <= 86400000 && (!data.exists() || newData.val() < data.val())" },
+        "timestamp": { ".validate": "newData.isNumber() && newData.val() <= now" },
+        "$other":    { ".validate": false }
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['nickname'])",
+        "nickname":  { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 6" },
+        "email":     { ".validate": "newData.isString()" },
+        "joinedAt":  { ".validate": "newData.isNumber()" },
+        "lastLogin": { ".validate": "newData.isNumber()" },
+        "$other":    { ".validate": false }
+      }
+    },
+
+    "nicknames": {
+      ".read": "auth != null",
+      "$nick": {
+        ".write": "auth != null && (!data.exists() || data.val() === auth.uid) && (!newData.exists() || newData.val() === auth.uid)",
+        ".validate": "!newData.exists() || newData.val() === auth.uid"
+      }
+    }
+  }
+}

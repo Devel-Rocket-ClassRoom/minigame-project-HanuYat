@@ -40,7 +40,7 @@ public class LeaderboardManager : MonoBehaviour
     // 기존 기록보다 빠를 때만 저장. saved=false 면 더 느려서 갱신 안 함.
     public async UniTask<(bool success, bool saved, string error)> SubmitTimeAsync(int timeMs)
     {
-        if (!AuthManager.Instance.IsLogedIn)
+        if (!AuthManager.Instance.IsLoggedIn)
         {
             return (false, false, "로그인이 필요합니다.");
         }
@@ -100,7 +100,7 @@ public class LeaderboardManager : MonoBehaviour
         if (
             leaderboardRef == null
             || AuthManager.Instance == null
-            || !AuthManager.Instance.IsLogedIn
+            || !AuthManager.Instance.IsLoggedIn
         )
             return;
         if (string.IsNullOrWhiteSpace(nickname))
@@ -122,8 +122,9 @@ public class LeaderboardManager : MonoBehaviour
         }
     }
 
-    // timeMs 오름차순(최단 상위) 기록을 반환. limit <= 0 이면 전체 (등수 = 인덱스+1).
-    public async UniTask<List<LeaderboardEntry>> LoadLeaderboardAsync(int limit = 0)
+    // timeMs 오름차순(최단 상위) 상위 limit개 반환. limit <= 0 이면 전체.
+    // 등수 = 리스트 인덱스 + 1 (상위 limit 안에 있을 때만 정확).
+    public async UniTask<List<LeaderboardEntry>> LoadTopAsync(int limit = 100)
     {
         if (leaderboardRef == null)
         {
@@ -132,9 +133,9 @@ public class LeaderboardManager : MonoBehaviour
 
         try
         {
-            Debug.Log($"[Leaderboard] 불러오기 시도... (limit={limit})");
+            Debug.Log($"[Leaderboard] 상위 불러오기 시도... (limit={limit})");
 
-            // timeMs 인덱스 정렬. (rules에 ".indexOn":"timeMs" 권장)
+            // timeMs 인덱스 정렬 + 상위 N개만 (rules의 ".indexOn":"timeMs").
             Query query = leaderboardRef.OrderByChild("timeMs");
             if (limit > 0)
                 query = query.LimitToFirst(limit);
@@ -142,13 +143,62 @@ public class LeaderboardManager : MonoBehaviour
             DataSnapshot snapshot = await query.GetValueAsync();
             List<LeaderboardEntry> leaderboardList = ParseEntries(snapshot);
 
-            Debug.Log($"[Leaderboard] 불러오기 성공 ({leaderboardList.Count}명)");
+            Debug.Log($"[Leaderboard] 상위 불러오기 성공 ({leaderboardList.Count}명)");
             return leaderboardList;
         }
         catch (Exception ex)
         {
             Debug.LogError($"[Leaderboard] 불러오기 실패! {ex.Message}");
             return new List<LeaderboardEntry>();
+        }
+    }
+
+    // 내 단일 기록(leaderboard/{uid}) 직접 조회. 없으면 null. (상위 N 밖일 때 내 기록 표시용)
+    public async UniTask<LeaderboardEntry> GetMyEntryAsync()
+    {
+        if (
+            leaderboardRef == null
+            || AuthManager.Instance == null
+            || !AuthManager.Instance.IsLoggedIn
+        )
+            return null;
+
+        try
+        {
+            DataSnapshot snap = await leaderboardRef
+                .Child(AuthManager.Instance.UserId)
+                .GetValueAsync();
+            if (!snap.Exists)
+                return null;
+            return LeaderboardEntry.FromJson(snap.GetRawJsonValue());
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Leaderboard] 내 기록 조회 실패: {ex.Message}");
+            return null;
+        }
+    }
+
+    // 내 등수(전체 기준). timeMs <= 내기록 인 항목 수로 산정 → 동률은 같은 구간으로 묶인다.
+    // ⚠️ RTDB는 서버측 count가 없어 해당 구간을 스캔한다. 상위 N 안에 있으면 이 호출 없이
+    //    리스트 인덱스로 등수를 쓰는 게 싸다(LeaderboardUI 참고).
+    public async UniTask<int> GetMyRankAsync(int myTimeMs)
+    {
+        if (leaderboardRef == null || myTimeMs <= 0)
+            return -1;
+
+        try
+        {
+            DataSnapshot snap = await leaderboardRef
+                .OrderByChild("timeMs")
+                .EndAt(myTimeMs)
+                .GetValueAsync();
+            return (int)snap.ChildrenCount;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Leaderboard] 등수 조회 실패: {ex.Message}");
+            return -1;
         }
     }
 

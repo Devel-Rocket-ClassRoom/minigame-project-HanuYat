@@ -75,7 +75,7 @@ public class AccountPanelController : MonoBehaviour
     private void Refresh()
     {
         var auth = AuthManager.Instance;
-        bool logged = auth != null && auth.IsLogedIn;
+        bool logged = auth != null && auth.IsLoggedIn;
         bool anon = logged && auth.IsAnonymous;
         bool email = logged && auth.IsEmailLinked;
         bool stove = logged && !anon && !email; // 커스텀 토큰(STOVE)

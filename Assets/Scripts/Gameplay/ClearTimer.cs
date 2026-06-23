@@ -70,9 +70,9 @@ public class ClearTimer : MonoBehaviour
             if (AuthManager.Instance != null)
             {
                 await UniTask.WaitUntil(() => AuthManager.Instance.IsInitialized);
-                if (!AuthManager.Instance.IsLogedIn)
+                if (!AuthManager.Instance.IsLoggedIn)
                 {
-                    var (ok, authError) = await AuthManager.Instance.SignInAnnonymouslyAsync();
+                    var (ok, authError) = await AuthManager.Instance.SignInAnonymouslyAsync();
                     if (!ok)
                     {
                         Debug.LogWarning($"[ClearTimer] 익명 로그인 실패 — 제출 스킵: {authError}");

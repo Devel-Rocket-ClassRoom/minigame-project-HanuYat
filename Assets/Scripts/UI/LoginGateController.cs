@@ -51,11 +51,11 @@ public class LoginGateController : MonoBehaviour
         );
 
         // 명시적 로그아웃 상태면 복원된 세션을 정리하고 게이트 유지.
-        if (ready && AuthManager.Instance.WasSignedOut && AuthManager.Instance.IsLogedIn)
+        if (ready && AuthManager.Instance.WasSignedOut && AuthManager.Instance.IsLoggedIn)
             AuthManager.Instance.SignOut();
 
         // 자동 스킵: 이미 로그인 + 닉네임 있음.
-        if (ready && AuthManager.Instance.IsLogedIn && NicknameStore.HasNickname)
+        if (ready && AuthManager.Instance.IsLoggedIn && NicknameStore.HasNickname)
         {
             CloseGate();
             return;
@@ -105,9 +105,9 @@ public class LoginGateController : MonoBehaviour
         SetStatus("로그인 중...\nSigning in...");
 
         bool freshSignIn = false;
-        if (!AuthManager.Instance.IsLogedIn)
+        if (!AuthManager.Instance.IsLoggedIn)
         {
-            var (ok, err) = await AuthManager.Instance.SignInAnnonymouslyAsync();
+            var (ok, err) = await AuthManager.Instance.SignInAnonymouslyAsync();
             if (!ok)
             {
                 SetStatus(err);
