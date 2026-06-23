@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class ExitSequence : MonoBehaviour
 {
+    // 클리어 확정 순간 1회 발화 — 클리어 타이머 정지 신호.
+    public static event System.Action OnCleared;
+
     [SerializeField]
     private PlayerController playerController;
 
@@ -100,6 +103,9 @@ public class ExitSequence : MonoBehaviour
         if (cleared)
             return;
         cleared = true;
+
+        // 클리어 타이머 정지 + 리더보드 제출 트리거.
+        OnCleared?.Invoke();
 
         flameDisplay?.LightAll();
 

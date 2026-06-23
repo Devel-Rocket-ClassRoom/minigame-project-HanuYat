@@ -6,7 +6,10 @@ public static class NicknameStore
     private const string Key = "leaderboard_nickname";
     private const string DefaultNickname = "익명";
 
-    public const int MaxLength = 12;
+    public const int MaxLength = 6;
+
+    // 닉네임이 바뀔 때 발화 (로그인 버튼 라벨 등 갱신용).
+    public static event System.Action OnChanged;
 
     public static bool HasNickname =>
         PlayerPrefs.HasKey(Key) && !string.IsNullOrWhiteSpace(PlayerPrefs.GetString(Key));
@@ -27,5 +30,6 @@ public static class NicknameStore
 
         PlayerPrefs.SetString(Key, trimmed);
         PlayerPrefs.Save();
+        OnChanged?.Invoke();
     }
 }
