@@ -5,6 +5,9 @@ using UnityEngine;
 // SetActive(true) 직후 동기 실행됨.
 public class TutorialPaperReveal : MonoBehaviour
 {
+    // 종이가 실제로 등장한 순간 1회 발화 — 클리어 타이머 시작 신호.
+    public static event System.Action OnRevealed;
+
     [SerializeField]
     private GameObject paperRoot;
 
@@ -43,6 +46,9 @@ public class TutorialPaperReveal : MonoBehaviour
             return;
 
         paperRoot.SetActive(true);
+
+        // 종이 등장 = 클리어 타이머 시작 시점.
+        OnRevealed?.Invoke();
 
         // 종이 활성화 직후 FlameCounterDisplay.Awake가 동기 실행됨.
         // 현재 카운터(첫 턴 억제로 0)에 맞춰 동기화.

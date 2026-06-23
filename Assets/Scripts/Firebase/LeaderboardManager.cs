@@ -11,10 +11,6 @@ public class LeaderboardManager : MonoBehaviour
     public static LeaderboardManager Instance => instance;
 
     private DatabaseReference leaderboardRef;
-    private Query listenerQuery;
-
-    private bool isListenerActive;
-    public event Action<List<LeaderboardEntry>> OnLeaderboardUpdated;
 
     private void Awake()
     {
@@ -98,7 +94,36 @@ public class LeaderboardManager : MonoBehaviour
         }
     }
 
-    public async UniTask<List<LeaderboardEntry>> LoadLeaderboardAsync(int limit = 10)
+    // 기존 기록이 있으면 그 닉네임만 갱신. 기록 없으면 무시(부분 노드 생성 방지).
+    public async UniTask UpdateNicknameAsync(string nickname)
+    {
+        if (
+            leaderboardRef == null
+            || AuthManager.Instance == null
+            || !AuthManager.Instance.IsLogedIn
+        )
+            return;
+        if (string.IsNullOrWhiteSpace(nickname))
+            return;
+
+        string uid = AuthManager.Instance.UserId;
+        try
+        {
+            DataSnapshot exist = await leaderboardRef.Child(uid).Child("timeMs").GetValueAsync();
+            if (!exist.Exists)
+                return; // 기록 없음 → 닉만 쓰면 검증 실패하므로 스킵
+
+            await leaderboardRef.Child(uid).Child("nickname").SetValueAsync(nickname);
+            Debug.Log("[Leaderboard] 닉네임 갱신 완료");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Leaderboard] 닉네임 갱신 실패: {ex.Message}");
+        }
+    }
+
+    // timeMs 오름차순(최단 상위) 기록을 반환. limit <= 0 이면 전체 (등수 = 인덱스+1).
+    public async UniTask<List<LeaderboardEntry>> LoadLeaderboardAsync(int limit = 0)
     {
         if (leaderboardRef == null)
         {
@@ -107,24 +132,27 @@ public class LeaderboardManager : MonoBehaviour
 
         try
         {
-            Debug.Log($"[Leaderboard] 리더보드 불러오기 시도...");
+            Debug.Log($"[Leaderboard] 불러오기 시도... (limit={limit})");
 
-            // timeMs 오름차순 하위 limit개 = 가장 빠른 기록들
-            Query query = leaderboardRef.OrderByChild("timeMs").LimitToFirst(limit);
+            // timeMs 인덱스 정렬. (rules에 ".indexOn":"timeMs" 권장)
+            Query query = leaderboardRef.OrderByChild("timeMs");
+            if (limit > 0)
+                query = query.LimitToFirst(limit);
+
             DataSnapshot snapshot = await query.GetValueAsync();
             List<LeaderboardEntry> leaderboardList = ParseEntries(snapshot);
 
-            Debug.Log($"[Leaderboard] 리더보드 불러오기 성공");
+            Debug.Log($"[Leaderboard] 불러오기 성공 ({leaderboardList.Count}명)");
             return leaderboardList;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[Leaderboard] 리더보드 불러오기 실패! {ex.Message}");
+            Debug.LogError($"[Leaderboard] 불러오기 실패! {ex.Message}");
             return new List<LeaderboardEntry>();
         }
     }
 
-    public List<LeaderboardEntry> ParseEntries(DataSnapshot snapshot)
+    private List<LeaderboardEntry> ParseEntries(DataSnapshot snapshot)
     {
         List<LeaderboardEntry> list = new List<LeaderboardEntry>();
 
@@ -141,53 +169,11 @@ public class LeaderboardManager : MonoBehaviour
         return list;
     }
 
-    public void StartRealtimeListener(int limit = 10)
-    {
-        if (isListenerActive || leaderboardRef == null)
-            return;
-
-        Debug.Log("[Leaderboard] 실시간 리스너 시작");
-        listenerQuery = leaderboardRef.OrderByChild("timeMs").LimitToFirst(limit);
-        listenerQuery.ValueChanged += OnValueChanged;
-        isListenerActive = true;
-    }
-
-    public void StopRealtimeListener()
-    {
-        if (isListenerActive && listenerQuery != null)
-        {
-            Debug.Log("[Leaderboard] 실시간 리스너 중지");
-            listenerQuery.ValueChanged -= OnValueChanged;
-            listenerQuery = null;
-            isListenerActive = false;
-        }
-    }
-
-    private void OnValueChanged(object sender, ValueChangedEventArgs args)
-    {
-        if (args.DatabaseError != null)
-        {
-            Debug.LogError($"[Leaderboard] 리스너 오류: {args.DatabaseError.Message}");
-            return;
-        }
-
-        List<LeaderboardEntry> leaderboard = ParseEntries(args.Snapshot);
-        DispatchUpdateAsync(leaderboard).Forget();
-    }
-
-    private async UniTaskVoid DispatchUpdateAsync(List<LeaderboardEntry> leaderboard)
-    {
-        await UniTask.SwitchToMainThread();
-        OnLeaderboardUpdated?.Invoke(leaderboard);
-    }
-
     private void OnDestroy()
     {
         if (instance == this)
         {
             instance = null;
         }
-
-        StopRealtimeListener();
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,6 +19,18 @@ public class ClearScreenController : MonoBehaviour
     [SerializeField]
     private float buttonRevealDelay = 1.5f;
 
+    // 클리어 타임 표기 (자막과 버튼 사이).
+    [SerializeField]
+    private TextMeshProUGUI clearTimeText;
+
+    // 신기록 시 표시할 오브젝트(BlinkingText로 일렁임). 평소 비활성.
+    [SerializeField]
+    private GameObject newRecordObject;
+
+    // 신기록 판정(제출 완료) 대기 상한.
+    [SerializeField]
+    private float newRecordWaitTimeout = 2f;
+
     [SerializeField]
     private string mainMenuSceneName = "MainMenu Scene";
 
@@ -31,6 +44,9 @@ public class ClearScreenController : MonoBehaviour
             restartButton.gameObject.SetActive(false);
         if (mainMenuButton != null)
             mainMenuButton.gameObject.SetActive(false);
+
+        if (newRecordObject != null)
+            newRecordObject.SetActive(false);
 
         restartButton?.onClick.AddListener(OnRestart);
         mainMenuButton?.onClick.AddListener(OnMainMenu);
@@ -52,13 +68,39 @@ public class ClearScreenController : MonoBehaviour
         if (panel != null)
             panel.SetActive(true);
 
-        // 자막 먼저 → 버튼 나중.
-        StartCoroutine(RevealButtonsRoutine());
+        // 클리어 타임 표기 (자막과 함께 노출).
+        if (clearTimeText != null)
+        {
+            clearTimeText.gameObject.SetActive(true);
+            clearTimeText.text =
+                ClearTimer.LastClearMs > 0
+                    ? $"Clear Time: {TimeUtil.ToClearTimeString(ClearTimer.LastClearMs)}"
+                    : "Clear Time: --:--.---";
+        }
+
+        if (newRecordObject != null)
+            newRecordObject.SetActive(false);
+
+        // 자막/타임 먼저 → (신기록이면 New Record) → 버튼 나중.
+        StartCoroutine(RevealRoutine());
     }
 
-    private IEnumerator RevealButtonsRoutine()
+    private IEnumerator RevealRoutine()
     {
+        // 자막/타임 보여준 뒤 버튼 등장까지 대기.
         yield return new WaitForSecondsRealtime(buttonRevealDelay);
+
+        // 신기록 판정(제출 완료) 대기 — 상한 내. (보통 이미 완료)
+        float waited = 0f;
+        while (!ClearTimer.SubmitDone && waited < newRecordWaitTimeout)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        // New Record와 버튼을 함께 노출.
+        if (newRecordObject != null && ClearTimer.LastWasNewRecord)
+            newRecordObject.SetActive(true); // BlinkingText가 일렁임
 
         if (restartButton != null)
             restartButton.gameObject.SetActive(true);

@@ -16,6 +16,9 @@ public class MainMenuController : MonoBehaviour
     private GameObject settingsPanel;
 
     [SerializeField]
+    private GameObject leaderboardPanel;
+
+    [SerializeField]
     private FadeController fadeController;
 
     // 스타트 → 페이드아웃 후 검은 화면에 띄우는 스토리 모달(Dark UI). 클릭/아무키로 게임 씬 진입.
@@ -42,6 +45,9 @@ public class MainMenuController : MonoBehaviour
 
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
+
+        if (leaderboardPanel != null)
+            leaderboardPanel.SetActive(false);
 
         // 스토리 모달은 스타트 전까지 숨김 — 에디터에서 켜둔 채 시작해도 강제 비활성.
         if (storyModal != null && storyModal.gameObject.activeSelf)
@@ -115,6 +121,12 @@ public class MainMenuController : MonoBehaviour
     {
         if (settingsPanel != null)
             settingsPanel.SetActive(true);
+    }
+
+    public void OnLeaderboardClicked()
+    {
+        if (leaderboardPanel != null)
+            leaderboardPanel.SetActive(true);
     }
 
     public void OnQuitClicked()
